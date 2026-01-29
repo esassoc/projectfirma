@@ -49,9 +49,8 @@ namespace ProjectFirma.Web.Views.User
 
             // ReSharper disable once ConvertClosureToMethodGroup
             var allOrganizations = HttpRequestStorage.DatabaseEntities.Organizations.ToList().OrderBy(x => x.OrganizationName).ToList();
-            var filteredOrganizations = allOrganizations.Where(o => o.KeystoneOrganizationGuid != null || o.IsUnknownOrUnspecified).ToList();
             //var filteredOrganizations = allOrganizations.ToList();
-            OrganizationsSelectList = filteredOrganizations.ToSelectList(x => x.OrganizationID.ToString(), x => x.OrganizationName);
+            OrganizationsSelectList = allOrganizations.ToSelectList(x => x.OrganizationID.ToString(), x => x.OrganizationName);
         }
 
         private string MakeOrganizationNameWithKeystoneGuidWarning(ProjectFirmaModels.Models.Organization organization)
