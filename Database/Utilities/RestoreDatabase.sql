@@ -69,7 +69,12 @@ DECLARE @LastBackupKeyValues TABLE
 		,BeginsLogChain bit
 		,HasIncompleteMetaData bit
 		,IsForceOffline bit
-		,IsCopyOnly bit		,FirstRecoveryForkID uniqueidentifier		,ForkPointLSN numeric(25,0)		,RecoveryModel nvarchar(60)		,DifferentialBaseLSN numeric(25,0)		,DifferentialBaseGUID uniqueidentifier		,BackupTypeDescription nvarchar(60)		,BackupSetGUID uniqueidentifier NULL 		,CompressedBackupSize bigint		--following columns introduced in SQL 2012		,Containment tinyint 		--following columns introduced in SQL 2014		,KeyAlgorithm nvarchar(32)		,EncryptorThumbprint varbinary(20)		,EncryptorType nvarchar(32)	);INSERT INTO @LastBackupKeyValues EXEC ('RESTORE HEADERONLY FROM DISK=''@DUMPFILE@''');-- Record this database restore data, only one row in the table so clear out old entries firstuse ${db-name}delete from dbo.LastSQLServerDatabaseBackupinsert into dbo.LastSQLServerDatabaseBackup
+		,IsCopyOnly bit		,FirstRecoveryForkID uniqueidentifier		,ForkPointLSN numeric(25,0)		,RecoveryModel nvarchar(60)		,DifferentialBaseLSN numeric(25,0)		,DifferentialBaseGUID uniqueidentifier		,BackupTypeDescription nvarchar(60)		,BackupSetGUID uniqueidentifier NULL 		,CompressedBackupSize bigint		--following columns introduced in SQL 2012		,Containment tinyint 		--following columns introduced in SQL 2014		,KeyAlgorithm nvarchar(32)		,EncryptorThumbprint varbinary(20)		,EncryptorType nvarchar(32)
+		--following columns introduced in SQL 2016
+		,LastValidRestoreTime datetime
+		,TimeZone smallint
+		,CompressionAlgorithm nvarchar(32)
+	);INSERT INTO @LastBackupKeyValues EXEC ('RESTORE HEADERONLY FROM DISK=''@DUMPFILE@''');-- Record this database restore data, only one row in the table so clear out old entries firstuse ${db-name}delete from dbo.LastSQLServerDatabaseBackupinsert into dbo.LastSQLServerDatabaseBackup
 select    lbkv.BackupName,    lbkv.UserName,    lbkv.ServerName,    lbkv.DatabaseName,    lbkv.DatabaseVersion,    lbkv.DatabaseCreationDate,    lbkv.BackupSize,    lbkv.BackupStartDate,    lbkv.BackupFinishDate,    lbkv.MachineName,    lbkv.Collation,    lbkv.CompressedBackupSize 
     from @LastBackupKeyValues as lbkv
 
