@@ -96,7 +96,11 @@ namespace ProjectFirma.Web.Controllers
                 Response.Cookies.Add(returnUrl);
 
                 var returnUrlVal = HttpUtility.UrlDecode(returnUrl.Value);
-                return Redirect(returnUrlVal);
+                var validatedReturnUrl = FirmaHelpers.ValidateReturnUrl(returnUrlVal);
+                if (!string.IsNullOrEmpty(validatedReturnUrl))
+                {
+                    return Redirect(validatedReturnUrl);
+                }
             }
 
             // placeholder route - since url is secured, authorize filter should redirect to SSO flow (since no EM.Common.Keystone.AllowAnonymous attribute)
