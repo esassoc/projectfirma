@@ -86,7 +86,11 @@ namespace ProjectFirma.Web.Controllers
             //look up cookie and return to url we were previously on, otherwise homepage.
             if (!string.IsNullOrWhiteSpace(returnTo))
             {
-                return Redirect(FirmaHelpers.ValidateReturnUrl(returnTo));
+                var validatedReturnUrl = FirmaHelpers.ValidateReturnUrl(returnTo);
+                if (!string.IsNullOrWhiteSpace(validatedReturnUrl))
+                {
+                    return Redirect(validatedReturnUrl);
+                }
             }
 
             var returnUrl = Request.Cookies["ReturnURL"];
