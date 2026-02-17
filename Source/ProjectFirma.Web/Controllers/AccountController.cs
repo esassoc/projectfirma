@@ -68,12 +68,12 @@ namespace ProjectFirma.Web.Controllers
                 Expires = DateTime.UtcNow.AddMinutes(30),
             });
 
-            var returnFromSiktaUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOn(""));
+            var returnFromSitkaUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOn(""));
 
             var initiateFromTenantDomainUrl = ConfigurationManager.AppSettings["auth0:initiateFromTenantDomainUrl"];
             
             var sitka = initiateFromTenantDomainUrl + "/Account/LogOn"
-                                                    + "?returnTo=" + HttpUtility.UrlEncode(returnFromSiktaUrl);
+                                                    + "?returnTo=" + HttpUtility.UrlEncode(returnFromSitkaUrl);
 
             return Redirect(sitka);
         }
