@@ -86,7 +86,11 @@ namespace ProjectFirma.Web.Controllers
             //look up cookie and return to url we were previously on, otherwise homepage.
             if (!string.IsNullOrWhiteSpace(returnTo))
             {
-                return Redirect(FirmaHelpers.ValidateReturnUrl(returnTo));
+                var validatedReturnUrl = FirmaHelpers.ValidateReturnUrl(returnTo);
+                if (!string.IsNullOrWhiteSpace(validatedReturnUrl))
+                {
+                    return Redirect(validatedReturnUrl);
+                }
             }
 
             var returnUrl = Request.Cookies["ReturnURL"];
@@ -96,7 +100,11 @@ namespace ProjectFirma.Web.Controllers
                 Response.Cookies.Add(returnUrl);
 
                 var returnUrlVal = HttpUtility.UrlDecode(returnUrl.Value);
-                return Redirect(returnUrlVal);
+                var validatedReturnUrl = FirmaHelpers.ValidateReturnUrl(returnUrlVal);
+                if (!string.IsNullOrEmpty(validatedReturnUrl))
+                {
+                    return Redirect(validatedReturnUrl);
+                }
             }
 
             // placeholder route - since url is secured, authorize filter should redirect to SSO flow (since no EM.Common.Keystone.AllowAnonymous attribute)

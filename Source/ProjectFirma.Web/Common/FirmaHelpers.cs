@@ -219,7 +219,7 @@ namespace ProjectFirma.Web.Common
             if (!IsAllowedTenantHost(uri.Host))
                 return null;
 
-            // Normalize: strip fragment, keep path + query
+            // Normalize: return absolute URL (scheme/host/path + query), strip fragment
             return uri.GetLeftPart(UriPartial.Path) + uri.Query;
         }
 

@@ -159,17 +159,20 @@ namespace ProjectFirma.Web.Auth
                             var returnTo = req.Query["returnTo"];
                             if (!string.IsNullOrWhiteSpace(returnTo))
                             {
-                                returnTo = FirmaHelpers.ValidateReturnUrl(returnTo);
-                                notification.OwinContext.Response.Cookies.Append(
-                                    "ReturnURL",
-                                    returnTo,
-                                    new Microsoft.Owin.CookieOptions
-                                    {
-                                        HttpOnly = true,
-                                        Secure = req.Scheme == "https",
-                                        SameSite = Microsoft.Owin.SameSiteMode.Lax, // Lax usually works best
-                                    }
-                                );
+                                var safeReturnTo = FirmaHelpers.ValidateReturnUrl(returnTo);
+                                if (!string.IsNullOrEmpty(safeReturnTo))
+                                {
+                                    notification.OwinContext.Response.Cookies.Append(
+                                        "ReturnURL",
+                                        safeReturnTo,
+                                        new Microsoft.Owin.CookieOptions
+                                        {
+                                            HttpOnly = true,
+                                            Secure = req.Scheme == "https",
+                                            SameSite = Microsoft.Owin.SameSiteMode.Lax, // Lax usually works best
+                                        }
+                                    );
+                                }
                             }
                         }
                     }

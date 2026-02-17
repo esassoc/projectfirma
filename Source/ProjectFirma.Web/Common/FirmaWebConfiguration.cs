@@ -81,11 +81,13 @@ namespace ProjectFirma.Web.Common
 
         public static List<string> CanonicalHostNames => Tenant.All.OrderBy(x => x.TenantID).Select(x => FirmaEnvironment.GetCanonicalHostNameForEnvironment(x)).ToList();
 
-        public static HashSet<string> CanonicalHostNameSet =>
-            Tenant.All
-                .Select(x => FirmaEnvironment.GetCanonicalHostNameForEnvironment(x))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        private static readonly System.Lazy<HashSet<string>> CanonicalHostNameSetLazy =
+            new System.Lazy<HashSet<string>>(
+                () => Tenant.All
+                    .Select(x => FirmaEnvironment.GetCanonicalHostNameForEnvironment(x))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase));
 
+        public static HashSet<string> CanonicalHostNameSet => CanonicalHostNameSetLazy.Value;
         public static string GeoServerUrl = SitkaConfiguration.GetRequiredAppSetting("GeoServerUrl");
         public static bool TenantDropdownEnabled = Boolean.Parse(SitkaConfiguration.GetRequiredAppSetting("TenantDropdownEnabled"));
 
