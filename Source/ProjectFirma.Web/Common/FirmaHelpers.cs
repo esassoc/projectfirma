@@ -18,14 +18,13 @@ GNU Affero General Public License <http://www.gnu.org/licenses/> for more detail
 Source code is available upon request via <support@sitkatech.com>.
 </license>
 -----------------------------------------------------------------------*/
+using LtInfo.Common;
+using ProjectFirma.Web.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Web;
-using ProjectFirma.Web.Controllers;
-using LtInfo.Common;
-using LtInfo.Common.Mvc;
 
 namespace ProjectFirma.Web.Common
 {
@@ -59,10 +58,10 @@ namespace ProjectFirma.Web.Common
             switch (FirmaWebConfiguration.AuthenticationType)
             {
                 case AuthenticationType.KeystoneAuth: 
-                    logInUrl = SitkaRoute<AccountController>.BuildUrlFromExpression(c => c.LogOn());
+                    logInUrl = SitkaRoute<AccountController>.BuildUrlFromExpression(c => c.LogOn(""));
                     break;
                 case AuthenticationType.Auth0Auth:
-                    logInUrl = SitkaRoute<AccountController>.BuildUrlFromExpression(c => c.LogOn());
+                    logInUrl = SitkaRoute<AccountController>.BuildUrlFromExpression(c => c.BeginLogin());
                     break;
                 case AuthenticationType.LocalAuth:
                     logInUrl = SitkaRoute<LocalAuthenticationController>.BuildUrlFromExpression(c => c.LocalAuthLogon());
@@ -80,10 +79,10 @@ namespace ProjectFirma.Web.Common
             switch (FirmaWebConfiguration.AuthenticationType)
             {
                 case AuthenticationType.KeystoneAuth:
-                    logInUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOn());
+                    logInUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOn(""));
                     break;
                 case AuthenticationType.Auth0Auth:
-                    logInUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOn());
+                    logInUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.BeginLogin());
                     break;
                 case AuthenticationType.LocalAuth:
                     logInUrl = SitkaRoute<LocalAuthenticationController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LocalAuthLogon());
@@ -194,6 +193,47 @@ namespace ProjectFirma.Web.Common
                         : String.Join(", ", g.Select(x => MultiTenantHelpers.FormatReportingYear(x.number)))
                 )
                 .ToList();
+        }
+
+        public static string ValidateReturnUrl(string returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(returnUrl))
+                return null;
+
+            // Must be absolute
+            if (!Uri.TryCreate(returnUrl, UriKind.Absolute, out var uri))
+                return null;
+
+            // Scheme rules:
+            // - https always allowed
+            // - http allowed only for localhost/dev
+            bool schemeOk =
+                uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+                (uri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+                 && uri.Host.Contains("localhost", StringComparison.OrdinalIgnoreCase));
+
+            if (!schemeOk)
+                return null;
+
+            // Host must be a known tenant
+            if (!IsAllowedTenantHost(uri.Host))
+                return null;
+
+            // Normalize: return absolute URL (scheme/host/path + query), strip fragment
+            return uri.GetLeftPart(UriPartial.Path) + uri.Query;
+        }
+
+        private static bool IsAllowedTenantHost(string host)
+        {
+            // Local dev
+            if (host.EndsWith(".localhost.projectfirma.com", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // ProjectFirma-managed domains
+            if (host.EndsWith(".projectfirma.com", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return FirmaWebConfiguration.CanonicalHostNameSet.Contains(host);
         }
     }
 }

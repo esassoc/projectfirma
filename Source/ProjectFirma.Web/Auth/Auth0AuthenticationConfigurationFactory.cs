@@ -5,7 +5,6 @@ using Microsoft.Owin;
 using Microsoft.Owin.Host.SystemWeb;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
-using Microsoft.Owin.Security.Provider;
 using ProjectFirma.Web.Common;
 using ProjectFirma.Web.Controllers;
 using ProjectFirma.Web.Models;
@@ -15,8 +14,6 @@ using System;
 using System.Configuration;
 using System.IdentityModel.Tokens;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -26,7 +23,7 @@ using SameSiteMode = Microsoft.Owin.SameSiteMode;
 
 namespace ProjectFirma.Web.Auth
 {
-   
+  
     public class Auth0AuthenticationConfigurationFactory
     {
         public CookieAuthenticationOptions CreateAuth0CookieAuthenticationOptions()
@@ -139,6 +136,47 @@ namespace ProjectFirma.Web.Auth
                         notification.ProtocolMessage.PostLogoutRedirectUri = postLogoutRedirectUri;
                     }
 
+                    //// Auth Request
+                    if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.AuthenticationRequest)
+                    {
+
+                        // Detect "plumbing" hits (Auth0 return / login endpoint / OIDC callback-ish)
+                        var req = notification.OwinContext.Request;
+
+                        bool looksLikeAuth0Return =
+                            !string.IsNullOrEmpty(req.Query["iss"]) ||
+                            !string.IsNullOrEmpty(req.Query["code"]) ||
+                            !string.IsNullOrEmpty(req.Query["state"]);
+
+                        // Don't compute returnTo when it's Auth0 returning control to us.
+                        // - ReturnUrl was explicitly provided, OR
+                        // - we don't already have one AND this isn't an auth plumbing request
+                        //var explicitReturnUrl = req.Query["ReturnUrl"];
+                        bool shouldSet = !looksLikeAuth0Return;
+
+                        if (shouldSet)
+                        {
+                            var returnTo = req.Query["returnTo"];
+                            if (!string.IsNullOrWhiteSpace(returnTo))
+                            {
+                                var safeReturnTo = FirmaHelpers.ValidateReturnUrl(returnTo);
+                                if (!string.IsNullOrEmpty(safeReturnTo))
+                                {
+                                    notification.OwinContext.Response.Cookies.Append(
+                                        "ReturnURL",
+                                        safeReturnTo,
+                                        new Microsoft.Owin.CookieOptions
+                                        {
+                                            HttpOnly = true,
+                                            Secure = req.Scheme == "https",
+                                            SameSite = Microsoft.Owin.SameSiteMode.Lax, // Lax usually works best
+                                        }
+                                    );
+                                }
+                            }
+                        }
+                    }
+
                     // Handle logout
                     if (notification.ProtocolMessage.RequestType == OpenIdConnectRequestType.LogoutRequest)
                     {
@@ -159,22 +197,11 @@ namespace ProjectFirma.Web.Auth
                         notification.HandleResponse();
                     }
 
-                    var httpContextBase = GetHttpContext(notification);
-                    var referrer = httpContextBase.Request.UrlReferrer;
-                    if (referrer != null && referrer.Host?.ToLower() == canonicalHostNameForEnvironment.ToLower())
-                    {
-                        notification.Response.Cookies.Append("ReturnURL", referrer.PathAndQuery);
-                    }
-
                     return Task.FromResult(0);
                 }
             };
         }
-        private static HttpContextBase GetHttpContext(BaseContext<OpenIdConnectAuthenticationOptions> n)
-        {
-            return (HttpContextBase)n.OwinContext.Environment["System.Web.HttpContextBase"];
-        }
-
+        
         /// <summary>
         /// Gets a value from a named cookie using a specified key.
         /// </summary>
@@ -260,59 +287,6 @@ namespace ProjectFirma.Web.Auth
             return unknownOrganization.OrganizationID;
         }
 
-        private static void HandleUnknownOrganization(Person person)
-        {
-            var unknownOrganization = HttpRequestStorage.DatabaseEntities.Organizations.GetUnknownOrganization();
-            person.OrganizationID = unknownOrganization.OrganizationID;
-            //Assign user to magic Unknown Organization ID
-        }
-
-        private static Organization HandleOrganization(IAuth0UserClaims auth0UserClaims, Person person,
-            ref bool sendNewOrganizationNotification)
-        {
-            Organization organization;
-            // We are having erratic errors here where we appear not to be able to look up Organizations in the database that definitely should be there. I'm 
-            // adding some additional debugging to track down the exact nature of the failure here, which I can't directly replicate. Sorry
-            // for the noise here. -- SLG 1/21/2020
-
-            // first look by guid, then by name; 
-            var organizationByGuid = HttpRequestStorage.DatabaseEntities.Organizations.GetOrganizationByKeystoneOrganizationGuid(auth0UserClaims.OrganizationGuid.Value);
-            SitkaHttpApplication.Logger.Info($"Tenant \"{HttpRequestStorage.Tenant.TenantName}\" (TenantID: {HttpRequestStorage.Tenant.TenantID}): In SyncLocalAccountStore - organizationByGuid '{auth0UserClaims.OrganizationGuid}' found: {organizationByGuid != null}");
-
-            var organizationByName = HttpRequestStorage.DatabaseEntities.Organizations.GetOrganizationByOrganizationName(auth0UserClaims.OrganizationName);
-            SitkaHttpApplication.Logger.Info($"Tenant \"{HttpRequestStorage.Tenant.TenantName}\" (TenantID: {HttpRequestStorage.Tenant.TenantID}): In SyncLocalAccountStore - organizationByName '{auth0UserClaims.OrganizationName}' found: {organizationByName != null}");
-
-            organization = organizationByGuid ?? organizationByName;
-
-            // If Organization not available, create it on the fly since it is a person org
-            if (organization == null)
-            {
-                SitkaHttpApplication.Logger.Info($"Tenant \"{HttpRequestStorage.Tenant.TenantName}\" (TenantID: {HttpRequestStorage.Tenant.TenantID}): In SyncLocalAccountStore - Could not find Organization with auth0UserClaims.OrganizationGuid '{auth0UserClaims.OrganizationGuid}' or auth0UserClaims.OrganizationName '{auth0UserClaims.OrganizationName}'. Will attempt to create new Organization.");
-                // Do we have any Organizations at all?? (Have we somehow trashed HttpRequestStorage.DatabaseEntities.Organizations?)
-                SitkaHttpApplication.Logger.Info($"Tenant \"{HttpRequestStorage.Tenant.TenantName}\" HttpRequestStorage.DatabaseEntities.Organizations count: {HttpRequestStorage.DatabaseEntities.Organizations.Count()}");
-
-                var defaultOrganizationType = HttpRequestStorage.DatabaseEntities.OrganizationTypes.GetDefaultOrganizationType();
-                organization = new Organization(auth0UserClaims.OrganizationName, true, defaultOrganizationType, Organization.UseOrganizationBoundaryForMatchmakerDefault, false);
-                HttpRequestStorage.DatabaseEntities.AllOrganizations.Add(organization);
-                sendNewOrganizationNotification = true;
-            }
-            else
-            {
-                SitkaHttpApplication.Logger.Info($"Tenant \"{HttpRequestStorage.Tenant.TenantName}\" (TenantID: {HttpRequestStorage.Tenant.TenantID}): In SyncLocalAccountStore - Successfully found existing Organization with auth0UserClaims.OrganizationGuid '{auth0UserClaims.OrganizationGuid}' or auth0UserClaims.OrganizationName '{auth0UserClaims.OrganizationName}'.");
-            }
-
-            organization.OrganizationName = auth0UserClaims.OrganizationName;
-
-            if (!organization.KeystoneOrganizationGuid.HasValue)
-            {
-                organization.KeystoneOrganizationGuid = auth0UserClaims.OrganizationGuid;
-            }
-
-            person.Organization = organization;
-            person.OrganizationID = organization.OrganizationID;
-            return organization;
-        }
-
         private Person HandleNewUser(IAuth0UserClaims auth0UserClaims, DateTime currentDateTime,
             out bool sendNewUserNotification)
         {
@@ -353,51 +327,6 @@ namespace ProjectFirma.Web.Auth
 
             var parts = email.Trim().Split('@');
             return parts.Length == 2 ? parts[1] : null;
-        }
-
-        private static void SendNewOrganizationCreatedMessage(Person person, string loginName)
-        {
-            var organization = person.Organization;
-            var subject =
-                $"{FieldDefinitionEnum.Organization.ToType().GetFieldDefinitionLabel()} added: {person.Organization.GetDisplayName()}";
-
-            var message = $@"
-                <div style='font-size: 12px; font-family: Arial'>
-                    <strong>{FieldDefinitionEnum.Organization.ToType().GetFieldDefinitionLabel()} created:</strong> {organization.GetDisplayNameAsUrl()}<br />
-                    <strong>Created on:</strong> {DateTime.Now}<br />
-                    <strong>Created because:</strong> New user logged in<br />
-                    <strong>New user:</strong> {person.GetFullNameFirstLast()} ({person.Email})<br />
-                    <br />
-                    <p>
-                        You may want to <a href=""{SitkaRoute<OrganizationController>.BuildAbsoluteUrlFromExpression(x => x.Detail(organization
-                            .OrganizationID, null))}"">add detail for this {FieldDefinitionEnum.Organization.ToType().GetFieldDefinitionLabel()}</a> such as its abbreviation, {FieldDefinitionEnum.OrganizationType.ToType().GetFieldDefinitionLabel()}, website, logo, etc. This will make its {FieldDefinitionEnum.Organization.ToType().GetFieldDefinitionLabel()} summary page display better.
-                    </p>
-                    <br />
-                    <div style='font-size: 10px; color: gray'>
-                    OTHER DETAILS:<br />
-                    LOGIN: {loginName}<br />
-                    <br />
-                    </div>
-                    <div>{$"- {MultiTenantHelpers.GetToolDisplayName()} team"}<br/><br/><img src=""cid:tool-logo"" width=""160"" /></div>
-
-                    <div>You received this email because you are set up as a point of contact for support - if that's not correct, let us know: {FirmaWebConfiguration.SitkaSupportEmail}.</div>
-                </div>
-                ";
-
-            SendMessageImpl(person, subject, message);
-        }
-
-        private static async Task PostOrganizationToExternalSystem(Organization organization)
-        {
-            var tenant = HttpRequestStorage.Tenant;
-            if (tenant.TenantID == Tenant.ActionAgendaForPugetSound.TenantID)
-            {
-                var organizationPostDto = new OrganizationDto(organization);
-                var client = new HttpClient();
-                await client.PostAsJsonAsync(
-                    $"{FirmaWebConfiguration.PsInfoPostOrganizationUrl}/{FirmaWebConfiguration.PsInfoApiKey}",
-                    organizationPostDto);
-            }
         }
 
         private static void SendNewUserCreatedMessage(Person person, string loginName)

@@ -11,6 +11,8 @@
     <add key="auth0:RedirectUri" value="${auth0-redirectUri}" />
     <add key="auth0:PostLogoutRedirectUri" value="${auth0-postLogoutRedirectUri}" />
     <add key="auth0:OrganizationID" value="${auth0-organizationId}" />
+    <add key="auth0:initiateFromTenantDomainUrl" value="${auth0-initiateFromTenantDomainUrl}" />
+
     <add key="FirmaEnvironment" value="${environment}"/>
     <add key="vs:EnableBrowserLink" value="false"/>
     <add key="webpages:Version" value="3.0.0.0"/>
