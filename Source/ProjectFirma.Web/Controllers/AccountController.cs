@@ -60,13 +60,18 @@ namespace ProjectFirma.Web.Controllers
         public ActionResult BeginLogin()
         {
             var referrer = Request.UrlReferrer?.AbsoluteUri;
-            Response.Cookies.Add(new HttpCookie("ReturnURL", referrer)
+            var safeReturnUrl = FirmaHelpers.ValidateReturnUrl(referrer);
+
+            if (!string.IsNullOrEmpty(safeReturnUrl))
             {
-                HttpOnly = true,
-                Secure = Request.IsSecureConnection,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddMinutes(30),
-            });
+                Response.Cookies.Add(new HttpCookie("ReturnURL", safeReturnUrl)
+                {
+                    HttpOnly = true,
+                    Secure = Request.IsSecureConnection,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddMinutes(30),
+                });
+            }
 
             var returnFromSitkaUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOn(""));
 
