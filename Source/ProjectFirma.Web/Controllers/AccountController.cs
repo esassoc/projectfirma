@@ -75,7 +75,7 @@ namespace ProjectFirma.Web.Controllers
 
             var returnFromSitkaUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOn(""));
 
-            var initiateFromTenantDomainUrl = ConfigurationManager.AppSettings["auth0:initiateFromTenantDomainUrl"];
+            var initiateFromTenantDomainUrl = "https://" + FirmaWebConfiguration.DefaultTenantCanonicalHostName;
             
             var sitka = initiateFromTenantDomainUrl + "/Account/LogOn"
                                                     + "?returnTo=" + HttpUtility.UrlEncode(returnFromSitkaUrl);
