@@ -19,14 +19,12 @@ Source code is available upon request via <support@sitkatech.com>.
 </license>
 -----------------------------------------------------------------------*/
 using LtInfo.Common;
-using LtInfo.Common.Mvc;
 using ProjectFirma.Web.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Web;
-using static System.Net.WebRequestMethods;
 
 namespace ProjectFirma.Web.Common
 {

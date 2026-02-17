@@ -149,7 +149,7 @@ namespace ProjectFirma.Web.Controllers
             if (FirmaWebConfiguration.AuthenticationType == AuthenticationType.Auth0Auth)
             {
                 var returnUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlFromExpression(c => c.LogOffAuth0());
-                var sitkaLogout = "https://sitka.localhost.projectfirma.com/Account/LogOffAndReturn"
+                var sitkaLogout = "https://" + FirmaWebConfiguration.DefaultTenantCanonicalHostName + "/Account/LogOffAndReturn"
                                   + "?returnURL=" + HttpUtility.UrlEncode(returnUrl);
 
                 return Redirect(sitkaLogout);
@@ -175,7 +175,7 @@ namespace ProjectFirma.Web.Controllers
             );
 
             var safeReturn = FirmaHelpers.ValidateReturnUrl(returnURL)
-                             ?? "https://sitka.localhost.projectfirma.com/";
+                             ?? "https://" + FirmaWebConfiguration.DefaultTenantCanonicalHostName;
 
             return Redirect(safeReturn);
         }
