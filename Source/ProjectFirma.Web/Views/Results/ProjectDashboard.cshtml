@@ -56,6 +56,23 @@
             background-color: white;
         }
 
+        .projectFiltersRow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .projectFiltersDropdowns {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+        }
+
+        .projectFilterItem {
+            flex: 1;
+        }
+
         .projectFiltersSelect button {
             font-size: 14px;
             padding-top: 10px;
@@ -78,7 +95,7 @@
         }
 
         #accomplishmentsDashboard .bootstrap-select .dropdown-toggle {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
             padding-top: 15px;
             padding-bottom: 15px;
@@ -106,17 +123,21 @@
         .stickyHeaderNavBar {
             text-transform: uppercase;
             text-align: center;
-            @*display: flex;
-            *@ padding-left: 0;
+            padding-left: 0;
             padding-right: 0;
+            font-size: 20px;
         }
 
             .stickyHeaderNavBar ul {
                 display: flex;
                 flex-wrap: wrap;
-                justify-content: space-between;
                 float: none;
                 gap: 10px;
+            }
+
+            .stickyHeaderNavBar ul::before,
+            .stickyHeaderNavBar ul::after {
+                display: none;
             }
 
         .projectDashboardNavBar .nav li a {
@@ -178,7 +199,6 @@
 
     </style>
 
-    /* On small screens force wrap and put jobs on its own row */
     <style type="text/css" media="only screen and  (max-width: 991px)">
         .counterRow {
             flex-wrap: wrap;
@@ -199,12 +219,24 @@
         }
     </style>
     <style type="text/css" media="only screen and  (max-width: 768px)">
-        
+
         .counterItem {
             flex: 0 0 50%;
         }
+    </style>
 
-      
+    <style type="text/css" media="only screen and (max-width: 767px)">
+        .projectFiltersRow {
+            flex-direction: column;
+        }
+
+        .projectFiltersDropdowns {
+            flex-direction: column;
+        }
+
+        .projectFiltersRow {
+            align-items: stretch;
+        }
     </style>
 
     <style type="text/css" media="only screen and (min-width: 1200px)">
@@ -236,19 +268,23 @@
         }
     </style>
 
-    <style type="text/css" media="only screen and (min-width: 1200px)">
-        .nav > li > a.habitatAndClimateResilienceNavLink, .navbar-nav > li > a.habitatAndClimateResilienceNavLink {
-            padding: 5px 15px 5px 15px;
-        }
-    </style>
 
-    <style type="text/css" media="only screen and (min-width: 992px)">
+
+    <style type="text/css" media="only screen and (min-width: 992px) and (max-width: 1199px)">
         .nav > li > a.capacityEnhancementNavLink, .navbar-nav > li > a.capacityEnhancementNavLink {
             padding: 5px 15px 5px 15px;
         }
+        
+        .nav > li > a.projectSummaryNavLink, .navbar-nav > li > a.projectSummaryNavLink {
+            padding: 35px 10px 35px 10px;
+        }
+
+        .nav > li > a.waterSupplyAndQualityNavLink, .navbar-nav > li > a.waterSupplyAndQualityNavLink, .nav > li > a.habitatAndClimateResilienceNavLink, .navbar-nav > li > a.habitatAndClimateResilienceNavLink {
+            padding: 25px 10px 25px 10px;
+        }
     </style>
 
-    <style type="text/css" media="only screen and (min-width: 992px) and (max-width: 1199px)">
+    <style type="text/css" media="only screen and (min-width: 1200px)">
 
         .nav > li > a.projectSummaryNavLink, .navbar-nav > li > a.projectSummaryNavLink {
             padding: 25px 10px 25px 10px;
@@ -261,8 +297,14 @@
         }
 
 
+        .nav > li > a.projectSummaryNavLink, .navbar-nav > li > a.projectSummaryNavLink {
+            padding: 25px 10px 25px 10px;
+        }
+    </style>
 
-        .nav > li > a.projectSummaryNavLink, .navbar-nav > li > a.projectSummaryNavLink, .nav > li > a.waterSupplyAndQualityNavLink, .navbar-nav > li > a.waterSupplyAndQualityNavLink {
+    <style type="text/css" media="only screen and (min-width: 689px) and (max-width: 991px)">
+
+        .nav > li > a.waterSupplyAndQualityNavLink, .navbar-nav > li > a.waterSupplyAndQualityNavLink {
             padding: 25px 10px 25px 10px;
         }
     </style>
@@ -272,12 +314,6 @@
 
         .nav > li > a.habitatAndClimateResilienceNavLink, .navbar-nav > li > a.habitatAndClimateResilienceNavLink {
             padding: 15px 15px 15px 15px;
-        }
-    </style>
-    <style type="text/css" media="only screen and (min-width: 741px) and (max-width: 767px)">
-
-        .nav > li > a.projectSummaryNavLink, .navbar-nav > li > a.projectSummaryNavLink {
-            padding: 35px 10px 35px 10px;
         }
     </style>
 
@@ -295,9 +331,12 @@
         .nav > li > a.habitatAndClimateResilienceNavLink, .navbar-nav > li > a.habitatAndClimateResilienceNavLink {
             padding: 15px 15px 15px 15px;
         }
+    </style>
+
+    <style type="text/css" media="only screen and (min-width: 621px) and (max-width: 688px)">
 
         .nav > li > a.waterSupplyAndQualityNavLink, .navbar-nav > li > a.waterSupplyAndQualityNavLink {
-            padding: 25px 10px 25px 10px;
+            padding: 15px 10px 15px 10px;
         }
     </style>
 
@@ -321,7 +360,7 @@
 
 <div id="accomplishmentsDashboard">
 
-    <div class="row projectDashboardNavBar container-fluid">
+    <div class="row projectDashboardNavBar">
         <nav class="stickyHeaderNavBar">
             <ul class="nav navbar-nav ">
                 <li><a href="#projectSummary" class="projectSummaryNavLink">@FieldDefinitionEnum.Project.ToType().FieldDefinitionDisplayName Summary</a></li>
@@ -352,36 +391,34 @@
             <span style="font-weight: bold">Filter @FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized() By:</span>
         </div>
     </div>
-    <div class="row" style="margin-bottom: 50px">
-        <div class="col-sm-11">
-            <div class="row">
-                <div class="col-sm-4 col-xs-12">
-                    <select id="projectTypeDropdown" onchange="" class="selectpicker projectFiltersSelect projectTypeDropdownButton" data-live-search="true" data-width="auto" multiple="multiple">
-                        @foreach (var projectType in ViewDataTyped.ProjectTypes)
-                        {
-                            <option value="@projectType.Value">@projectType.Text</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-sm-4">
-                    <select id="projectCategoryDropdown" onchange="" class="selectpicker projectFiltersSelect projectCategoryDropdownButton" data-live-search="true" data-width="auto" multiple="multiple">
-                        @foreach (var category in ViewDataTyped.ProjectCategories)
-                        {
-                            <option value="@category.Value">@category.Text</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-sm-4">
-                    <select id="projectStageDropdown" class="selectpicker  projectFiltersSelect projectStageDropdownButton" data-live-search="true" data-width="auto" multiple="multiple">
-                        @foreach (var projectStage in ViewDataTyped.ProjectStages)
-                        {
-                            <option value="@projectStage.ProjectStageID">@projectStage.ProjectStageDisplayName</option>
-                        }
-                    </select>
-                </div>
+    <div class="projectFiltersRow" style="margin-bottom: 50px">
+        <div class="projectFiltersDropdowns">
+            <div class="projectFilterItem">
+                <select id="projectTypeDropdown" onchange="" class="selectpicker projectFiltersSelect projectTypeDropdownButton" data-live-search="true" data-width="auto" multiple="multiple">
+                    @foreach (var projectType in ViewDataTyped.ProjectTypes)
+                    {
+                        <option value="@projectType.Value">@projectType.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="projectFilterItem">
+                <select id="projectCategoryDropdown" onchange="" class="selectpicker projectFiltersSelect projectCategoryDropdownButton" data-live-search="true" data-width="auto" multiple="multiple">
+                    @foreach (var category in ViewDataTyped.ProjectCategories)
+                    {
+                        <option value="@category.Value">@category.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="projectFilterItem">
+                <select id="projectStageDropdown" class="selectpicker projectFiltersSelect projectStageDropdownButton" data-live-search="true" data-width="auto" multiple="multiple">
+                    @foreach (var projectStage in ViewDataTyped.ProjectStages)
+                    {
+                        <option value="@projectStage.ProjectStageID">@projectStage.ProjectStageDisplayName</option>
+                    }
+                </select>
             </div>
         </div>
-        <div class="col-sm-1">
+        <div style="margin-left: auto;">
             <button type="button" class="btn btn-firma btn-sm" style="background-color: #eee; color: #777;" onclick="clearFilters()">Clear Filters</button>
         </div>
     </div>
