@@ -700,6 +700,7 @@
     <Content Include="Content\fonts\azosans\demo.html" />
     <Content Include="Content\fonts\azosans\stylesheet.css" />
     <Content Include="Content\img\NCRPProjectTracker\Project-Tracker-Logo.png" />
+    <Content Include="Content\img\NCRPProjectTracker\ProjectDashboard-PM-via-implementation-projects-legend.png" />
     <Content Include="Content\img\Reclamation_logo_icon.png" />
     <Content Include="Content\img\SSMPProjectTracker\apple-icon-114x114.png" />
     <Content Include="Content\img\SSMPProjectTracker\apple-icon-120x120.png" />

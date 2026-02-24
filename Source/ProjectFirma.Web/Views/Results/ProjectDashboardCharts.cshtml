@@ -294,7 +294,6 @@
     </div>
     <div class="col-xs-12">
         <div class="chartPanel">
-            <strong class="chartHeader chartTitle">Tribal Projects: @(ViewDataTyped.NumberOfTribalProjects)</strong>
             @{ ViewGoogleChart.RenderPartialView(Html, ViewDataTyped.ProjectsByTribalRegionViewGoogleChartViewData); }
         </div>
     </div>
@@ -305,15 +304,10 @@
     </div>
 </div>
 
-<div class="row counterHeader">
-    <div class="col-xs-12 text-center">
-        <h4>Thematic Benefits</h4>
-    </div>
-</div>
 <div class="row">
-    <div class="col-xs-12">
+    <div class="col-xs-12" style="margin-top:15px;">
         <div style="text-align: center">
-            <strong class="chartHeader scrollHeader" id="capacityEnhancementAndTechincalAssistance">Capacity Enhancement and Technical Assistance</strong>
+            <strong class="chartHeader scrollHeader" id="capacityEnhancementAndTechincalAssistance">Capacity Enhancement and Technical Assistance (TA)</strong>
         </div>
         <div class="row statRow" style="margin-top:10px;">
             <div class="statCol col-xs-12 col-sm-6 col-md-3">
@@ -349,11 +343,11 @@
     </div>
     <div class="col-xs-12">
         <div style="text-align: center">
-            <strong class="chartHeader scrollHeader" id="habitatAndClimateResilience">Watershed and Climate Resilience & Nature Based Solutions Improvement</strong>        </div>
+            <strong class="chartTitle scrollHeader" id="habitatAndClimateResilience">Watershed and Climate Resilience – Implementation @FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()</strong>        </div>
         <div class="thematicBenefitschartPanel">
-            <div class="chartTitle">
-                <b>Implementation @FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()</b>
-            </div>
+            @*<div class="chartTitle">
+                <b>Watershed and Climate Resilience – Implementation @FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()</b>
+            </div>*@
             <div class="row">
                 <div class="col-xs-12 col-md-6">
                     <div class="">
@@ -366,6 +360,7 @@
                     </div>
                 </div>
             </div>
+            <div style="text-align: center"><img src="/Content/img/NCRPProjectTracker/ProjectDashboard-PM-via-implementation-projects-legend.png"/></div>
         </div>
     </div>
     <div class="col-xs-12" style="margin-top:15px;">

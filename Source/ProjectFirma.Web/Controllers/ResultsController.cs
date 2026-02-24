@@ -1228,7 +1228,7 @@ namespace ProjectFirma.Web.Controllers
             var projectByTATypeChartTitle = "Capacity Enhancement and Technical Assistance Type";
             var taTypeChartContainerID = projectByTATypeChartTitle.Replace(" ", "");
             var googleChartAxisHorizontal = new GoogleChartAxis(string.Empty, null, null) { Gridlines = new GoogleChartGridlinesOptions(-1, "transparent") };
-            var googleChartAxisVertical = new GoogleChartAxis("Number of Projects", null, GoogleChartAxisLabelFormat.Decimal);
+            var googleChartAxisVertical = new GoogleChartAxis("Number of Projects", null, GoogleChartAxisLabelFormat.Decimal) { Format = "0" };
             var googleChartAxisVerticals = new List<GoogleChartAxis> { googleChartAxisVertical };
 
             var typesOfTA = HttpRequestStorage.DatabaseEntities.PerformanceMeasureSubcategoryOptions.Where(x => x.PerformanceMeasureSubcategoryID == TechnicalAssistanceTypesOfTAPerformanceMeasureSubcategoryID).ToList();
@@ -1293,7 +1293,7 @@ namespace ProjectFirma.Web.Controllers
         {
             var acresCompletedChartTitle = $"Completed Via Implementation {FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()}";
             var acresCompletedChartContainerID = acresCompletedChartTitle.Replace(" ", "");
-            var googleChartAxisHorizontal = new GoogleChartAxis(FieldDefinitionEnum.PerformanceMeasure.ToType().GetFieldDefinitionLabel(), null, null) { Gridlines = new GoogleChartGridlinesOptions(-1, "transparent") };
+            var googleChartAxisHorizontal = new GoogleChartAxis(null, null, null) { Gridlines = new GoogleChartGridlinesOptions(-1, "transparent") };
             var googleChartAxisVerticalExpectedValue = new GoogleChartAxis("Acres / # of Plants", null, GoogleChartAxisLabelFormat.Decimal);
             var googleChartAxisVerticals = new List<GoogleChartAxis> { googleChartAxisVerticalExpectedValue };
 
@@ -1322,11 +1322,11 @@ namespace ProjectFirma.Web.Controllers
             // need to ignore null GoogleChartSeries so the custom colors match up to the column chart correctly
             acresCompletedChartConfig.SetSeriesIgnoringNullGoogleChartSeries(dataTable);
             acresCompletedChartConfig.Tooltip = new GoogleChartTooltip(true);
-            acresCompletedChartConfig.Legend.SetLegendPosition(GoogleChartLegendPosition.Top);
+            acresCompletedChartConfig.Legend.SetLegendPosition(GoogleChartLegendPosition.None);
             acresCompletedChartConfig.ChartArea = new GoogleChartConfigurationArea()
             {
                 Width = "100%",
-                Height = "75%",
+                Height = "85%",
                 Left = "20%",
                 Top = 10,
 
@@ -1345,7 +1345,7 @@ namespace ProjectFirma.Web.Controllers
             var acresCompletedChartContainerID = acresCompletedChartTitle.Replace(" ", "");
 
             // X axis is really performance measures, not funding orgs
-            var googleChartAxisHorizontal = new GoogleChartAxis(FieldDefinitionEnum.PerformanceMeasure.ToType().GetFieldDefinitionLabel(), null, null)
+            var googleChartAxisHorizontal = new GoogleChartAxis(null, null, null)
             {
                 Gridlines = new GoogleChartGridlinesOptions(-1, "transparent")
             };
@@ -1390,11 +1390,11 @@ namespace ProjectFirma.Web.Controllers
             acresCompletedChartConfig.SetSeriesIgnoringNullGoogleChartSeries(dataTable);
 
             acresCompletedChartConfig.Tooltip = new GoogleChartTooltip(true);
-            acresCompletedChartConfig.Legend.SetLegendPosition(GoogleChartLegendPosition.Top);
+            acresCompletedChartConfig.Legend.SetLegendPosition(GoogleChartLegendPosition.None);
             acresCompletedChartConfig.ChartArea = new GoogleChartConfigurationArea()
             {
                 Width = "100%",
-                Height = "75%",
+                Height = "85%",
                 Left = "20%",
                 Top = 10,
 
