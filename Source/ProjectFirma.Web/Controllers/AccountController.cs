@@ -161,7 +161,7 @@ namespace ProjectFirma.Web.Controllers
 
             if (FirmaWebConfiguration.AuthenticationType == AuthenticationType.Auth0Auth)
             {
-                var returnUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlFromExpression(c => c.LogOffAuth0());
+                var returnUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOffAuth0());
                 SitkaHttpApplication.Logger.Info($"AccountController - LogOff() - returnUrl: {returnUrl}");
                 var sitkaLogout = "https://" + FirmaWebConfiguration.DefaultTenantCanonicalHostName + "/Account/LogOffAndReturn"
                                   + "?returnURL=" + HttpUtility.UrlEncode(returnUrl);
