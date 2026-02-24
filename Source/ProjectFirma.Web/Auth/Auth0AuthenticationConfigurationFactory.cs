@@ -106,10 +106,12 @@ namespace ProjectFirma.Web.Auth
                         claimsIdentity.AddClaim(new Claim("access_token", n.ProtocolMessage.AccessToken));
                     }
 
-                    //map name claim to default name type
+                    // Map name claim to default name type. Be defensive in case the claim is missing.
+                    var nameClaim = claimsIdentity.FindFirst(Auth0OpenIDClaimTypes.Name);
+                    var mappedName = nameClaim != null ? nameClaim.Value : (claimsIdentity.Name ?? string.Empty);
                     claimsIdentity.AddClaim(new Claim(
                         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
-                        claimsIdentity.FindFirst(Auth0OpenIDClaimTypes.Name).Value.ToString()));
+                        mappedName));
 
                     // Check if the user is being redirected to a different tenant after login.
                     // The OIDC middleware round-trips AuthenticationProperties through the state
@@ -122,10 +124,24 @@ namespace ProjectFirma.Web.Auth
                         $"In SecurityTokenValidated: RedirectUri from AuthenticationTicket = '{redirectUri}'");
                     if (!string.IsNullOrEmpty(redirectUri))
                     {
-                        var queryIndex = redirectUri.IndexOf('?');
-                        if (queryIndex >= 0)
+                        // Try to parse as an absolute URI first; if that fails, fall back to extracting the query portion
+                        string query = null;
+                        if (Uri.TryCreate(redirectUri, UriKind.Absolute, out var redirectUriObj))
                         {
-                            var queryString = HttpUtility.ParseQueryString(redirectUri.Substring(queryIndex));
+                            query = redirectUriObj.Query; // includes leading '?'
+                        }
+                        else
+                        {
+                            var qi = redirectUri.IndexOf('?');
+                            if (qi >= 0)
+                            {
+                                query = redirectUri.Substring(qi);
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(query))
+                        {
+                            var queryString = HttpUtility.ParseQueryString(query);
                             var returnTo = queryString["returnTo"];
                             if (!string.IsNullOrEmpty(returnTo))
                             {
@@ -140,7 +156,21 @@ namespace ProjectFirma.Web.Auth
 
                     if (claimsIdentity.IsAuthenticated) // we have a token and we can determine the person.
                     {
-                        Auth0OpenIDUtilities.OpenIDClaimHandler(SyncLocalAccountStore, claimsIdentity);
+                        var crossTenantReturnUrl = HttpContext.Current?.Items["CrossTenantReturnUrl"] as string;
+                        if (!string.IsNullOrEmpty(crossTenantReturnUrl))
+                        {
+                            // User is passing through this tenant to reach a different one.
+                            // Skip Person/FirmaSession creation and redirect directly to the target tenant.
+                            // The target tenant's own OIDC flow will create the Person there.
+                            SitkaHttpApplication.Logger.Info(
+                                $"SecurityTokenValidated: Skipping SyncLocalAccountStore for TenantID {HttpRequestStorage.Tenant.TenantID}, " +
+                                $"redirecting directly to cross-tenant URL: {crossTenantReturnUrl}");
+                            n.AuthenticationTicket.Properties.RedirectUri = crossTenantReturnUrl;
+                        }
+                        else
+                        {
+                            Auth0OpenIDUtilities.OpenIDClaimHandler(SyncLocalAccountStore, claimsIdentity);
+                        }
                     }
 
                     return Task.FromResult(0);
