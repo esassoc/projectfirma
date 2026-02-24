@@ -198,12 +198,17 @@ namespace ProjectFirma.Web.Common
         public static string ValidateReturnUrl(string returnUrl)
         {
             if (string.IsNullOrWhiteSpace(returnUrl))
+            {
+                SitkaHttpApplication.Logger.Info($"ValidateReturnUrl - IsNullOrWhiteSpace");
                 return null;
+            }
 
             // Must be absolute
             if (!Uri.TryCreate(returnUrl, UriKind.Absolute, out var uri))
+            {
+                SitkaHttpApplication.Logger.Info($"ValidateReturnUrl - Must be absolute uri : {uri}");
                 return null;
-
+            }
             // Scheme rules:
             // - https always allowed
             // - http allowed only for localhost/dev
@@ -213,11 +218,17 @@ namespace ProjectFirma.Web.Common
                  && uri.Host.Contains("localhost", StringComparison.OrdinalIgnoreCase));
 
             if (!schemeOk)
+            {
+                SitkaHttpApplication.Logger.Info($"ValidateReturnUrl - Invalid scheme : {uri.Scheme}");
                 return null;
+            }
 
             // Host must be a known tenant
             if (!IsAllowedTenantHost(uri.Host))
+            {
+                SitkaHttpApplication.Logger.Info($"ValidateReturnUrl - Host not allowed : {uri.Host}");
                 return null;
+            }
 
             // Normalize: return absolute URL (scheme/host/path + query), strip fragment
             return uri.GetLeftPart(UriPartial.Path) + uri.Query;
