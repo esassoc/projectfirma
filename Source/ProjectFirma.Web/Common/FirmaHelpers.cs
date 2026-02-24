@@ -225,13 +225,13 @@ namespace ProjectFirma.Web.Common
 
         private static bool IsAllowedTenantHost(string host)
         {
-            // Local dev
-            if (host.EndsWith(".localhost.projectfirma.com", StringComparison.OrdinalIgnoreCase))
-                return true;
+            //// Local dev
+            //if (host.EndsWith(".localhost.projectfirma.com", StringComparison.OrdinalIgnoreCase))
+            //    return true;
 
-            // ProjectFirma-managed domains
-            if (host.EndsWith(".projectfirma.com", StringComparison.OrdinalIgnoreCase))
-                return true;
+            //// ProjectFirma-managed domains
+            //if (host.EndsWith(".projectfirma.com", StringComparison.OrdinalIgnoreCase))
+            //    return true;
 
             return FirmaWebConfiguration.CanonicalHostNameSet.Contains(host);
         }
