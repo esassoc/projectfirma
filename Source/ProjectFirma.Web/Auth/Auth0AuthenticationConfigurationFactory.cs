@@ -111,6 +111,33 @@ namespace ProjectFirma.Web.Auth
                         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
                         claimsIdentity.FindFirst(Auth0OpenIDClaimTypes.Name).Value.ToString()));
 
+                    // Check if the user is being redirected to a different tenant after login.
+                    // The OIDC middleware round-trips AuthenticationProperties through the state
+                    // parameter, so RedirectUri contains the original URL the user was accessing
+                    // (e.g., /Account/LogOn?returnTo=https://rcdprojects...).
+                    // We can't use cookies here because this runs during the Auth0 POST callback,
+                    // and SameSite=Lax cookies aren't sent on cross-site POSTs.
+                    var redirectUri = n.AuthenticationTicket?.Properties?.RedirectUri;
+                    SitkaHttpApplication.Logger.Info(
+                        $"In SecurityTokenValidated: RedirectUri from AuthenticationTicket = '{redirectUri}'");
+                    if (!string.IsNullOrEmpty(redirectUri))
+                    {
+                        var queryIndex = redirectUri.IndexOf('?');
+                        if (queryIndex >= 0)
+                        {
+                            var queryString = HttpUtility.ParseQueryString(redirectUri.Substring(queryIndex));
+                            var returnTo = queryString["returnTo"];
+                            if (!string.IsNullOrEmpty(returnTo))
+                            {
+                                var safeReturnTo = FirmaHelpers.ValidateReturnUrl(returnTo);
+                                if (!string.IsNullOrEmpty(safeReturnTo))
+                                {
+                                    HttpContext.Current.Items["CrossTenantReturnUrl"] = safeReturnTo;
+                                }
+                            }
+                        }
+                    }
+
                     if (claimsIdentity.IsAuthenticated) // we have a token and we can determine the person.
                     {
                         Auth0OpenIDUtilities.OpenIDClaimHandler(SyncLocalAccountStore, claimsIdentity);
@@ -276,7 +303,31 @@ namespace ProjectFirma.Web.Auth
 
             if (sendNewUserNotification)
             {
-                SendNewUserCreatedMessage(person, auth0UserClaims.LoginName);
+                // Suppress the notification email if the user is just passing through this
+                // tenant on their way to a different one (e.g., Auth0 redirected to the default
+                // tenant but the user actually intended to log into a different tenant).
+                // The notification will still be sent when the user arrives at the target tenant.
+                // We use HttpContext.Items (set in SecurityTokenValidated from the OIDC state)
+                // instead of cookies, because SameSite=Lax cookies aren't sent on the
+                // cross-site POST callback from Auth0.
+                var crossTenantReturnUrl = HttpContext.Current?.Items["CrossTenantReturnUrl"] as string;
+                if (!string.IsNullOrEmpty(crossTenantReturnUrl)
+                    && Uri.TryCreate(crossTenantReturnUrl, UriKind.Absolute, out var returnUri))
+                {
+                    var returnTenant = MultiTenantHelpers.GetTenantFromHostUrl(returnUri);
+                    if (returnTenant.TenantID != HttpRequestStorage.Tenant.TenantID)
+                    {
+                        SitkaHttpApplication.Logger.Info(
+                            $"SyncLocalAccountStore: Suppressing new user notification for TenantID {HttpRequestStorage.Tenant.TenantID} " +
+                            $"because user is being redirected to TenantID {returnTenant.TenantID}");
+                        sendNewUserNotification = false;
+                    }
+                }
+
+                if (sendNewUserNotification)
+                {
+                    SendNewUserCreatedMessage(person, auth0UserClaims.LoginName);
+                }
             }
 
             return HttpRequestStorage.Person;
