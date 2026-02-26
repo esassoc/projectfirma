@@ -25,6 +25,7 @@ using ProjectFirma.Web.Controllers;
 using ProjectFirma.Web.Models;
 using ProjectFirma.Web.Views.Shared;
 using ProjectFirmaModels.Models;
+using System.Collections.Generic;
 using System.Web;
 
 namespace ProjectFirma.Web.Views.Results
@@ -70,7 +71,7 @@ namespace ProjectFirma.Web.Views.Results
             GoogleChartJson projectsByTATypeGoogleChart, GoogleChartJson acresCompletedViaImplementationProjectsChartOne, GoogleChartJson acresCompletedViaImplementationProjectsChartTwo)
         {
             UnderservedCommunitiesViewGoogleChartViewData = new ViewGoogleChartViewData(underservedCommunitiesGoogleChart, underservedCommunitiesGoogleChart.GoogleChartConfiguration.Title, 350, true, true);
-            var geospatialAreaTypeIndexUrl = UrlTemplate.MakeHrefString(SitkaRoute<GeospatialAreaController>.BuildUrlFromExpression(c => c.Index(disadvantagedCommunityStatusGeospatialAreaTypeID)), "Underserved Community Status");
+            var geospatialAreaTypeIndexUrl = UrlTemplate.MakeHrefString(SitkaRoute<GeospatialAreaController>.BuildUrlFromExpression(c => c.Index(disadvantagedCommunityStatusGeospatialAreaTypeID)), "Disadvantaged Community Status", new Dictionary<string, string> { { "target", "_blank" } });
             UnderservedCommunitiesViewGoogleChartViewData.ChartTitleWithLink = new HtmlString($"<b>{FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()} by {geospatialAreaTypeIndexUrl}</b>");
             UnderservedCommunitiesHasData = false;
             UnderservedTotal = 0;
@@ -81,12 +82,10 @@ namespace ProjectFirma.Web.Views.Results
             }
 
             ProjectsByOwnerOrgTypeViewGoogleChartViewData = new ViewGoogleChartViewData(projectsByOwnerOrgTypeGoogleChart, projectsByOwnerOrgTypeGoogleChart.GoogleChartConfiguration.Title, 400, true);
-            var orgIndexUrl = UrlTemplate.MakeHrefString(SitkaRoute<OrganizationController>.BuildUrlFromExpression(c => c.Index()), $"{FieldDefinitionEnum.IsPrimaryContactOrganization.ToType().GetFieldDefinitionLabel()} Type");
-            ProjectsByOwnerOrgTypeViewGoogleChartViewData.ChartTitleWithLink = new HtmlString($"<b>{FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()} by {orgIndexUrl}</b>");
             ProjectsByOwnerOrgTypeHasData = projectsByOwnerOrgTypeGoogleChart.HasData();
 
             ProjectsByCountyAndTribalLandViewGoogleChartViewData = new ViewGoogleChartViewData(projectsByCountyAndTribalLandGoogleChart, projectsByCountyAndTribalLandGoogleChart.GoogleChartConfiguration.Title, 350, true);
-            var countyIndexUrl = UrlTemplate.MakeHrefString(SitkaRoute<GeospatialAreaController>.BuildUrlFromExpression(c => c.Index(countyGeospatialAreaTypeID)), "County");
+            var countyIndexUrl = UrlTemplate.MakeHrefString(SitkaRoute<GeospatialAreaController>.BuildUrlFromExpression(c => c.Index(countyGeospatialAreaTypeID)), "County", new Dictionary<string, string> { { "target", "_blank" } });
             var tribalLandIndexUrl = UrlTemplate.MakeHrefString(SitkaRoute<GeospatialAreaController>.BuildUrlFromExpression(c => c.Index(tribalLandGeospatialAreaTypeID)), "Tribal Land");
             ProjectsByCountyAndTribalLandViewGoogleChartViewData.ChartTitleWithLink = new HtmlString($"<b>{FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()} by {countyIndexUrl}</b>");
             ProjectsByCountyAndTribalLandHasData = projectsByCountyAndTribalLandGoogleChart.HasData();
@@ -95,7 +94,7 @@ namespace ProjectFirma.Web.Views.Results
             ProjectsByTribalRegionViewGoogleChartViewData.ChartTitleWithLink = new HtmlString($"<b>{FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()} by Tribal Region</b>");
 
             ProjectsByProjectTypeViewGoogleChartViewData = new ViewGoogleChartViewData(projectsByProjectTypeGoogleChart, projectsByProjectTypeGoogleChart.GoogleChartConfiguration.Title, 350, true);
-            var projectTypesIndexUrl = UrlTemplate.MakeHrefString(SitkaRoute<ProgramInfoController>.BuildUrlFromExpression(c => c.ClassificationSystem(projectTypeClassificationSystemID)), "Project Types");
+            var projectTypesIndexUrl = UrlTemplate.MakeHrefString(SitkaRoute<ProgramInfoController>.BuildUrlFromExpression(c => c.ClassificationSystem(projectTypeClassificationSystemID)), "Project Types", new Dictionary<string, string> { { "target", "_blank" } });
             ProjectsByProjectTypeViewGoogleChartViewData.ChartTitleWithLink = new HtmlString($"<b>{FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()} by {projectTypesIndexUrl}</b>");
             ProjectsByProjectTypeHasData = projectsByProjectTypeGoogleChart.HasData();
 
