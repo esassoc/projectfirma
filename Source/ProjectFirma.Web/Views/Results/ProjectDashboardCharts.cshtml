@@ -96,8 +96,41 @@
         line-height: 22px;
     }
 
+    .barChartLegend {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px 20px;
+    }
+
+    .barChartLegend .legendItem {
+        display: flex;
+        align-items: center;
+    }
+
+    .barChartLegend .legendItem:first-child {
+        justify-content: flex-end;
+    }
+
+    @@media (max-width: 767px) {
+        .barChartLegend {
+            grid-template-columns: 1fr;
+        }
+
+        .barChartLegend .legendItem,
+        .barChartLegend .legendItem:first-child {
+            justify-content: center;
+        }
+    }
+
     .pieChartLegend .notDisadvantagedLegend, .pieChartLegend .disadvantagedLegend, .pieChartLegend .severlyDisadvantagedLegend,
     .pieChartLegend .planningDesignLegend, .pieChartLegend .implementationLegend, .pieChartLegend .postImplementationLegend, .pieChartLegend .completedLegend {
+        height: 15px;
+        width: 20px;
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    .barChartLegend .plannedLegend, .barChartLegend .accomplishedLegend {
         height: 15px;
         width: 20px;
         display: inline-block;
@@ -138,6 +171,14 @@
 
     .completedLegend {
         background-color: #94c5e3;
+    }
+
+    .plannedLegend {
+        background-color: #156082;
+    }
+
+    .accomplishedLegend {
+        background-color: #4B5B13;
     }
 
     /* New dashboard statistic boxes */
@@ -203,8 +244,36 @@
              margin-left: 25%;
         }
     }
+
+    @@media (min-width: 1200px) {
+        .pieChartLegend {
+            margin-right: 0px;
+            margin-left: 0px;
+        }
+    }
 }
 
+</style>
+<style type="text/css" media="only screen and (min-width: 768px) and (max-width: 1199px)">
+
+    #underservedCommunitiesPieChartPanel .chartTitle {
+        margin-bottom: 0px;
+    }
+
+    #underservedCommunitiesPieChartPanel .overlay {
+       top: 188px;
+    }
+</style>
+
+<style type="text/css" media="only screen and (max-width: 568px)">
+
+    #underservedCommunitiesPieChartPanel .chartTitle {
+        margin-bottom: 0px;
+    }
+
+    #underservedCommunitiesPieChartPanel .overlay {
+       top: 188px;
+    }
 </style>
 
 <div class="row">
@@ -253,26 +322,19 @@
                 </div>
 
                 <div class="row pieChartLegend">
-                    <div class="col-xs-12 col-sm-6 col-sm-offset-1">
+                    <div class="col-xs-12 col-sm-6 col-md-4">
                         <div class="col-xs-4"><span class="planningDesignLegend"></span></div>
                         <div class="col-xs-8"><span style="font-weight: bold;">Planning/Design</span></div>
                     </div>
-                    <div class="col-xs-12 col-sm-5">
+                    <div class="col-xs-12 col-sm-6 col-md-4">
                         <div class="col-xs-4"><span class="implementationLegend"></span></div>
                         <div class="col-xs-8"><span style="font-weight: bold;">Implementation</span></div>
                     </div>
-                </div>
-                <div class="row pieChartLegend">
-                    <div class="col-xs-12 col-sm-6 col-sm-offset-1">
-                        <div class="col-xs-4"><span class="postImplementationLegend"></span></div>
-                        <div class="col-xs-8"><span style="font-weight: bold;">Post Implementation</span></div>
-                    </div>
-                    <div class="col-xs-12 col-sm-5">
+                    <div class="col-xs-12 col-sm-6 col-md-4">
                         <div class="col-xs-4"><span class="completedLegend"></span></div>
                         <div class="col-xs-8"><span style="font-weight: bold;">Completed</span></div>
                     </div>
                 </div>
-
             }
             else
             {
@@ -294,7 +356,6 @@
     </div>
     <div class="col-xs-12">
         <div class="chartPanel">
-            <strong class="chartHeader chartTitle">Tribal Projects: @(ViewDataTyped.NumberOfTribalProjects)</strong>
             @{ ViewGoogleChart.RenderPartialView(Html, ViewDataTyped.ProjectsByTribalRegionViewGoogleChartViewData); }
         </div>
     </div>
@@ -305,15 +366,10 @@
     </div>
 </div>
 
-<div class="row counterHeader">
-    <div class="col-xs-12 text-center">
-        <h4>Thematic Benefits</h4>
-    </div>
-</div>
 <div class="row">
-    <div class="col-xs-12">
+    <div class="col-xs-12" style="margin-top:15px;">
         <div style="text-align: center">
-            <strong class="chartHeader scrollHeader" id="capacityEnhancementAndTechincalAssistance">Capacity Enhancement and Technical Assistance</strong>
+            <strong class="chartHeader scrollHeader" id="capacityEnhancementAndTechincalAssistance">Capacity Enhancement and Technical Assistance (TA)</strong>
         </div>
         <div class="row statRow" style="margin-top:10px;">
             <div class="statCol col-xs-12 col-sm-6 col-md-3">
@@ -349,11 +405,11 @@
     </div>
     <div class="col-xs-12">
         <div style="text-align: center">
-            <strong class="chartHeader scrollHeader" id="habitatAndClimateResilience">Watershed and Climate Resilience & Nature Based Solutions Improvement</strong>        </div>
+            <strong class="chartTitle scrollHeader" id="habitatAndClimateResilience">Watershed and Climate Resilience – Implementation @FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()</strong>        </div>
         <div class="thematicBenefitschartPanel">
-            <div class="chartTitle">
-                <b>Implementation @FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()</b>
-            </div>
+            @*<div class="chartTitle">
+                <b>Watershed and Climate Resilience – Implementation @FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()</b>
+            </div>*@
             <div class="row">
                 <div class="col-xs-12 col-md-6">
                     <div class="">
@@ -366,11 +422,21 @@
                     </div>
                 </div>
             </div>
+            <div class="barChartLegend">
+                <div class="legendItem">
+                    <span class="plannedLegend"></span>
+                    <span style="font-weight: bold;">Planned</span>
+                </div>
+                <div class="legendItem">
+                    <span class="accomplishedLegend"></span>
+                    <span style="font-weight: bold;">Accomplished to Date</span>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-xs-12" style="margin-top:15px;">
         <div style="text-align: center">
-            <strong class="chartHeader scrollHeader" id="waterSupplyAndQuality">Water Supply and Quality</strong>
+            <strong class="chartHeader scrollHeader" id="waterSupplyAndQuality">Water Supply and Quality – Implementation @FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()</strong>
         </div>
         <div class="row statRow" style="margin-top:10px;">
             <div class="statCol col-xs-12 col-sm-6 col-md-3 col-md-offset-1 statColFirstRowOffset">

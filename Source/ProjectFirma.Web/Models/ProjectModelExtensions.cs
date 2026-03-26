@@ -1344,7 +1344,11 @@ namespace ProjectFirma.Web.Models
 
             var googleChartRowCs = new List<GoogleChartRowC>();
             var unusedColorIndex = 3;
-            foreach (var tribalRegionToProjectCount in tribalRegionToProjectCounts)
+            var tribalRegionOrder = new List<string> { "North", "Central", "South" };
+            var orderedTribalRegionToProjectCounts = tribalRegionToProjectCounts
+                .OrderBy(x => tribalRegionOrder.IndexOf(x.Key) >= 0 ? tribalRegionOrder.IndexOf(x.Key) : int.MaxValue)
+                .ThenBy(x => x.Key);
+            foreach (var tribalRegionToProjectCount in orderedTribalRegionToProjectCounts)
             {
                 var googleChartRowVs = new List<GoogleChartRowV> { new GoogleChartRowV(tribalRegionToProjectCount.Key) };
                 var projectCount = tribalRegionToProjectCount.Value;
@@ -1432,8 +1436,8 @@ namespace ProjectFirma.Web.Models
             var expectedSeries = new GoogleChartSeries(GoogleChartType.ColumnChart, GoogleChartAxisType.Primary, "#156082", null, null);
             var reportedSeries = new GoogleChartSeries(GoogleChartType.ColumnChart, GoogleChartAxisType.Primary, "#4B5B13", null, null);
 
-            var expectedLabel = "Expected Value";
-            var reportedLabel = "Reported Value";
+            var expectedLabel = "Planned";
+            var reportedLabel = "Accomplished to Date";
             var googleChartColumns = new List<GoogleChartColumn>
             {
                 new GoogleChartColumn("Performance Measure", GoogleChartColumnDataType.String),
@@ -1477,8 +1481,8 @@ namespace ProjectFirma.Web.Models
                 null
             );
 
-            var expectedLabel = "Expected Value";
-            var reportedLabel = "Reported Value";
+            var expectedLabel = "Planned";
+            var reportedLabel = "Accomplished to Date";
 
             var googleChartColumns = new List<GoogleChartColumn>
             {
@@ -1667,11 +1671,6 @@ namespace ProjectFirma.Web.Models
             "#2e6580",
             "#ffbb00",
             "#7d3951",
-            "#e0d7cc",
-            "#dee9bf",
-            "#d3dde3",
-            "#fff9e8",
-            "#e6e7e9",
             // google chart default colors start here
             "#3366CC",
             "#DC3912",
@@ -1708,7 +1707,12 @@ namespace ProjectFirma.Web.Models
             "#59E59A",
             "#E582B5",
             "#8080FC",
-            "#FF8282"
+            "#FF8282",
+            "#e0d7cc",
+            "#dee9bf",
+            "#d3dde3",
+            "#fff9e8",
+            "#e6e7e9",
         };
 
         public static ProjectCustomAttributesValidationResult ValidateCustomAttributes(this Project project, FirmaSession currentFirmaSession)

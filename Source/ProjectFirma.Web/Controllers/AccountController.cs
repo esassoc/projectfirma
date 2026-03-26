@@ -18,17 +18,20 @@ GNU Affero General Public License <http://www.gnu.org/licenses/> for more detail
 Source code is available upon request via <support@sitkatech.com>.
 </license>
 -----------------------------------------------------------------------*/
+using LtInfo.Common;
+using LtInfo.Common.Mvc;
+using Microsoft.Owin.Security;
+using Microsoft.Owin.Security.Cookies;
+using ProjectFirma.Web.Common;
+using ProjectFirma.Web.Security;
+using ProjectFirma.Web.Security.Shared;
+using ProjectFirmaModels.Models;
 using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Security.Claims;
 using System.Web;
 using System.Web.Mvc;
-using LtInfo.Common;
-using ProjectFirma.Web.Common;
-using ProjectFirma.Web.Security.Shared;
-using LtInfo.Common.Mvc;
-using Microsoft.Owin.Security;
-using ProjectFirma.Web.Security;
-using ProjectFirmaModels.Models;
 
 namespace ProjectFirma.Web.Controllers
 {
@@ -53,20 +56,60 @@ namespace ProjectFirma.Web.Controllers
             } 
         }
 
+        [AllowAnonymous]
+        public ActionResult BeginLogin()
+        {
+            var referrer = Request.UrlReferrer?.AbsoluteUri;
+            var safeReturnUrl = FirmaHelpers.ValidateReturnUrl(referrer);
+
+            if (!string.IsNullOrEmpty(safeReturnUrl))
+            {
+                Response.Cookies.Add(new HttpCookie("ReturnURL", safeReturnUrl)
+                {
+                    HttpOnly = true,
+                    Secure = Request.IsSecureConnection,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddMinutes(30),
+                });
+            }
+
+            var returnFromSitkaUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOn(""));
+
+            var initiateFromTenantDomainUrl = "https://" + FirmaWebConfiguration.DefaultTenantCanonicalHostName;
+            
+            var sitka = initiateFromTenantDomainUrl + "/Account/LogOn"
+                                                    + "?returnTo=" + HttpUtility.UrlEncode(returnFromSitkaUrl);
+
+            return Redirect(sitka);
+        }
+        
         [LoggedInUnclassifiedFeature]
         [CrossAreaRoute]
-        public ActionResult LogOn()
+        public ActionResult LogOn(string returnTo)
         {
             SitkaHttpApplication.Logger.Info($"AccountController - LogOn() - AuthType:{FirmaWebConfiguration.AuthenticationType}PersonID:{HttpRequestStorage.FirmaSession.PersonID}, email?:{HttpRequestStorage.FirmaSession.Person?.Email}");
             //look up cookie and return to url we were previously on, otherwise homepage.
-            var returnUrl = Request.Cookies["ReturnURL"];
+            if (!string.IsNullOrWhiteSpace(returnTo))
+            {
+                var validatedReturnUrl = FirmaHelpers.ValidateReturnUrl(returnTo);
+                if (!string.IsNullOrWhiteSpace(validatedReturnUrl))
+                {
+                    return Redirect(validatedReturnUrl);
+                }
+            }
 
+            var returnUrl = Request.Cookies["ReturnURL"];
             if (!string.IsNullOrWhiteSpace(returnUrl?.Value))
             {
                 returnUrl.Expires = DateTime.Now.AddDays(-1d);
                 Response.Cookies.Add(returnUrl);
 
-                return Redirect(HttpUtility.UrlDecode(returnUrl.Value));
+                var returnUrlVal = HttpUtility.UrlDecode(returnUrl.Value);
+                var validatedReturnUrl = FirmaHelpers.ValidateReturnUrl(returnUrlVal);
+                if (!string.IsNullOrEmpty(validatedReturnUrl))
+                {
+                    return Redirect(validatedReturnUrl);
+                }
             }
 
             // placeholder route - since url is secured, authorize filter should redirect to SSO flow (since no EM.Common.Keystone.AllowAnonymous attribute)
@@ -95,14 +138,15 @@ namespace ProjectFirma.Web.Controllers
             }
 
             // Otherwise, we just log off normally
-            
             switch (FirmaWebConfiguration.AuthenticationType)
             {
                 case AuthenticationType.KeystoneAuth:
                     Request.GetOwinContext().Authentication.SignOut();
                     break;
                 case AuthenticationType.Auth0Auth:
-                    Request.GetOwinContext().Authentication.SignOut();
+                    Request.GetOwinContext().Authentication.SignOut(
+                        CookieAuthenticationDefaults.AuthenticationType
+                    );
                     break;
                 case AuthenticationType.LocalAuth:
                     Request.GetOwinContext().Authentication.SignOut();
@@ -114,7 +158,39 @@ namespace ProjectFirma.Web.Controllers
             var currentPerson = HttpRequestStorage.Person;
             currentFirmaSession.Delete(HttpRequestStorage.DatabaseEntities);
             HttpRequestStorage.DatabaseEntities.SaveChanges(currentPerson);
+
+            if (FirmaWebConfiguration.AuthenticationType == AuthenticationType.Auth0Auth)
+            {
+                var returnUrl = SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.LogOffAuth0());
+                var sitkaLogout = "https://" + FirmaWebConfiguration.DefaultTenantCanonicalHostName + "/Account/LogOffAndReturn"
+                                  + "?returnURL=" + HttpUtility.UrlEncode(returnUrl);
+
+                return Redirect(sitkaLogout);
+            }
             return Redirect("/");
+        }
+
+        [AllowAnonymous]
+        public ActionResult LogOffAuth0()
+        {
+            // Clear local cookie
+            Request.GetOwinContext().Authentication.SignOut();
+            return Redirect("/");
+        }
+
+
+        [AllowAnonymous]
+        public ActionResult LogOffAndReturn(string returnURL)
+        {
+            // Clear local cookie
+            Request.GetOwinContext().Authentication.SignOut(
+                CookieAuthenticationDefaults.AuthenticationType
+            );
+
+            var safeReturn = FirmaHelpers.ValidateReturnUrl(returnURL)
+                             ?? "https://" + FirmaWebConfiguration.DefaultTenantCanonicalHostName;
+
+            return Redirect(safeReturn);
         }
 
         [AnonymousUnclassifiedFeature]
