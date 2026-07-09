@@ -150,10 +150,10 @@ namespace ProjectFirma.Web.ScheduledJobs
                 var createPerson = (!string.IsNullOrWhiteSpace(projectImageSimpleDto.FileResourceInfo.CreatePersonEmail)
                                        ? databaseEntities.AllPeople.FirstOrDefault(x => x.TenantID == tenantID && x.Email == projectImageSimpleDto.FileResourceInfo.CreatePersonEmail)
                                        : null) ??
-                                    databaseEntities.AllPeople.Where(x => x.TenantID == tenantID && x.RoleID == Role.Admin.RoleID || x.RoleID == Role.ESAAdmin.RoleID).OrderBy(x => x.RoleID).ThenBy(x => x.PersonID).FirstOrDefault();
+                                    databaseEntities.AllPeople.Where(x => x.TenantID == tenantID && (x.RoleID == Role.Admin.RoleID || x.RoleID == Role.ESAAdmin.RoleID)).OrderBy(x => x.RoleID).ThenBy(x => x.PersonID).FirstOrDefault();
                 if (createPerson == null)
                 {
-                    Logger.Warn($"\tProjectID: {project.ProjectID}; ExternalID: {projectImageSimpleDto.ProjectID}. No Create Person found for '{projectImageSimpleDto.FileResourceInfo.CreatePersonGUID}' and the system could not default the Create Person to a current Admin or ESA Admin");
+                    Logger.Warn($"\tProjectID: {project.ProjectID}; ExternalID: {projectImageSimpleDto.ProjectID}. No Create Person found for email '{projectImageSimpleDto.FileResourceInfo.CreatePersonEmail}' and the system could not default the Create Person to a current Admin or ESA Admin");
                     continue;
                 }
 
