@@ -69,7 +69,9 @@ namespace ProjectFirma.Web.ScheduledJobs
 
                 var recentlyModifiedExternalIDs = new List<int>();
 
-                var getRecentlyModifiedProjectsUrl = $"{apiUrl}/projects/recently-modified?apiKey={FirmaWebConfiguration.LTInfoApiKey}&{queryParameter}";
+                // apiUrl is the LtInfo API origin only (e.g. https://host), no path. Projects live
+                // under /api/projects; file resources live at root under /file-resources.
+                var getRecentlyModifiedProjectsUrl = $"{apiUrl}/api/projects/recently-modified?apiKey={FirmaWebConfiguration.LTInfoApiKey}&{queryParameter}";
                 var response = await client.GetAsync(getRecentlyModifiedProjectsUrl);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -91,7 +93,7 @@ namespace ProjectFirma.Web.ScheduledJobs
                     var project = projects.Single(x => x.ExternalID == externalID);
                     Logger.Info($"Starting Project Images sync for ProjectID: {project?.ProjectID}; ExternalID: {externalID}");
 
-                    var getProjectImagesUrl = $"{apiUrl}/projects/{externalID}/project-images?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
+                    var getProjectImagesUrl = $"{apiUrl}/api/projects/{externalID}/project-images?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
                     var getProjectImages = await client.GetAsync(getProjectImagesUrl);
                     if (!getProjectImages.IsSuccessStatusCode)
                     {
@@ -143,7 +145,11 @@ namespace ProjectFirma.Web.ScheduledJobs
                     Logger.Warn($"\tProjectID: {project.ProjectID}; ExternalID: {projectImageSimpleDto.ProjectID}. No Project Image Timing found for '{projectImageSimpleDto.ProjectImageTiming.ProjectImageTimingName}'");
                     continue;
                 }
-                var createPerson = databaseEntities.AllPeople.SingleOrDefault(x => x.TenantID == tenantID && x.PersonGuid == projectImageSimpleDto.FileResourceInfo.CreatePersonGUID) ??
+                // Match on email: both systems moved off the shared Keystone PersonGuid to Auth0.
+                // Falls back to the first Admin / ESA Admin when the author can't be matched.
+                var createPerson = (!string.IsNullOrWhiteSpace(projectImageSimpleDto.FileResourceInfo.CreatePersonEmail)
+                                       ? databaseEntities.AllPeople.FirstOrDefault(x => x.TenantID == tenantID && x.Email == projectImageSimpleDto.FileResourceInfo.CreatePersonEmail)
+                                       : null) ??
                                     databaseEntities.AllPeople.Where(x => x.TenantID == tenantID && x.RoleID == Role.Admin.RoleID || x.RoleID == Role.ESAAdmin.RoleID).OrderBy(x => x.RoleID).ThenBy(x => x.PersonID).FirstOrDefault();
                 if (createPerson == null)
                 {
@@ -152,7 +158,8 @@ namespace ProjectFirma.Web.ScheduledJobs
                 }
 
                 // get file resource from lt info api
-                var getFileResource = $"{apiUrl}/FileResource/GetWithApiKey/{projectImageSimpleDto.FileResourceInfo.FileResourceInfoGUID}?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
+                // File resources are served at the API root under /file-resources (NOT under /api).
+                var getFileResource = $"{apiUrl}/file-resources/GetWithApiKey/{projectImageSimpleDto.FileResourceInfo.FileResourceInfoGUID}?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
 
                 var response = await client.GetAsync(getFileResource);
                 if (!response.IsSuccessStatusCode)
