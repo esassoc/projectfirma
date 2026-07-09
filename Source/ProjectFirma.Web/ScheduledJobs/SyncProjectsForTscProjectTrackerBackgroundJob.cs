@@ -119,7 +119,10 @@ namespace ProjectFirma.Web.ScheduledJobs
 
                 var recentlyModifiedExternalIDs = new List<int>();
 
-                var getAllProjectsUrl = $"{apiUrl}/projects/all-projects?apiKey={FirmaWebConfiguration.LTInfoApiKey}&{queryParameter}";
+                // apiUrl is the LtInfo API origin only (e.g. https://host), no path. The Projects
+                // API lives under /api/projects (see LtInfo swagger); file resources live at root
+                // under /file-resources, so the sub-paths are carried here rather than in apiUrl.
+                var getAllProjectsUrl = $"{apiUrl}/api/projects/all-projects?apiKey={FirmaWebConfiguration.LTInfoApiKey}&{queryParameter}";
                 var response = await client.GetAsync(getAllProjectsUrl);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -161,7 +164,7 @@ namespace ProjectFirma.Web.ScheduledJobs
                 }
                 foreach (var project in projectsMissingPrimaryContact)
                 {
-                    var getProjectUrl = $"{apiUrl}/projects/{project.ExternalID}/?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
+                    var getProjectUrl = $"{apiUrl}/api/projects/{project.ExternalID}?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
                     var projectResponse = await client.GetAsync(getProjectUrl);
                     if (!projectResponse.IsSuccessStatusCode)
                     {
@@ -228,7 +231,11 @@ namespace ProjectFirma.Web.ScheduledJobs
             project.SubmissionDate = projectSimpleDto.SubmissionDate;
             project.ApprovalDate = projectSimpleDto.ApprovalDate;
 
-            var primaryContactPerson = databaseEntities.AllPeople.SingleOrDefault(x => x.TenantID == tenantID && x.PersonGuid == projectSimpleDto.PrimaryContactPersonGuid);
+            // Match on email: both systems moved off the shared Keystone PersonGuid to Auth0, so
+            // the GUID is no longer a usable cross-system key.
+            var primaryContactPerson = !string.IsNullOrWhiteSpace(projectSimpleDto.PrimaryContactPersonEmail)
+                ? databaseEntities.AllPeople.FirstOrDefault(x => x.TenantID == tenantID && x.Email == projectSimpleDto.PrimaryContactPersonEmail)
+                : null;
             if (primaryContactPerson != null)
             {
                 project.PrimaryContactPersonID = primaryContactPerson.PersonID;
@@ -735,7 +742,10 @@ namespace ProjectFirma.Web.ScheduledJobs
                     UpdateDate = projectNoteSimpleDto.UpdateDate
                 };
 
-                var createPerson = databaseEntities.AllPeople.SingleOrDefault(x => x.TenantID == tenantID && x.PersonGuid == projectNoteSimpleDto.CreatePersonGuid);
+                // Match on email: both systems moved off the shared Keystone PersonGuid to Auth0.
+                var createPerson = !string.IsNullOrWhiteSpace(projectNoteSimpleDto.CreatePersonEmail)
+                    ? databaseEntities.AllPeople.FirstOrDefault(x => x.TenantID == tenantID && x.Email == projectNoteSimpleDto.CreatePersonEmail)
+                    : null;
                 if (createPerson != null)
                 {
                     projectNote.CreatePersonID = createPerson.PersonID;
@@ -744,7 +754,9 @@ namespace ProjectFirma.Web.ScheduledJobs
                 {
                     projectNote.CreatePersonFullName = projectNoteSimpleDto.CreatePersonFullName;
                 }
-                var updatePerson = databaseEntities.AllPeople.SingleOrDefault(x => x.TenantID == tenantID && x.PersonGuid == projectNoteSimpleDto.UpdatePersonGuid);
+                var updatePerson = !string.IsNullOrWhiteSpace(projectNoteSimpleDto.UpdatePersonEmail)
+                    ? databaseEntities.AllPeople.FirstOrDefault(x => x.TenantID == tenantID && x.Email == projectNoteSimpleDto.UpdatePersonEmail)
+                    : null;
                 if (updatePerson != null)
                 {
                     projectNote.UpdatePersonID = updatePerson.PersonID;
