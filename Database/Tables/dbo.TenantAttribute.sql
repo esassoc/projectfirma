@@ -57,7 +57,8 @@ CREATE TABLE [dbo].[TenantAttribute](
 	[ProjectStewardshipVisibilityAdminOnly] [bit] NULL,
 	[AccomplishmentsDashboardVisibilityAdminOnly] [bit] NOT NULL,
 	[DisableProjectStewardOrganizationIndexPage] [bit] NULL,
- CONSTRAINT [PK_TenantAttribute_TenantAttributeID] PRIMARY KEY CLUSTERED 
+	[EnableDetailedLocationPolygonsOnProjectMap] [bit] NULL,
+ CONSTRAINT [PK_TenantAttribute_TenantAttributeID] PRIMARY KEY CLUSTERED
 (
 	[TenantAttributeID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],

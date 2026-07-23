@@ -364,6 +364,14 @@
                         @ViewDataTyped.TenantAttribute.EnableStatusUpdates.ToYesNo()
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-sm-5 fieldLabel text-right">
+                        Auto-Display Detailed Locations on Project Map?
+                    </div>
+                    <div class="col-sm-7">
+                        @((ViewDataTyped.TenantAttribute.EnableDetailedLocationPolygonsOnProjectMap ?? false).ToYesNo())
+                    </div>
+                </div>
             </div>
         </div>
     </div>

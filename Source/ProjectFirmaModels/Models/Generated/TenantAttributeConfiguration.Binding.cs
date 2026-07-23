@@ -69,6 +69,7 @@ namespace ProjectFirmaModels.Models
             Property(x => x.ProjectStewardshipVisibilityAdminOnly).HasColumnName(@"ProjectStewardshipVisibilityAdminOnly").HasColumnType("bit").IsOptional();
             Property(x => x.AccomplishmentsDashboardVisibilityAdminOnly).HasColumnName(@"AccomplishmentsDashboardVisibilityAdminOnly").HasColumnType("bit").IsRequired();
             Property(x => x.DisableProjectStewardOrganizationIndexPage).HasColumnName(@"DisableProjectStewardOrganizationIndexPage").HasColumnType("bit").IsOptional();
+            Property(x => x.EnableDetailedLocationPolygonsOnProjectMap).HasColumnName(@"EnableDetailedLocationPolygonsOnProjectMap").HasColumnType("bit").IsOptional();
 
             // Foreign keys
             HasOptional(a => a.PrimaryContactPerson).WithMany(b => b.TenantAttributesWhereYouAreThePrimaryContactPerson).HasForeignKey(c => c.PrimaryContactPersonID).WillCascadeOnDelete(false); // FK_TenantAttribute_Person_PrimaryContactPersonID_PersonID

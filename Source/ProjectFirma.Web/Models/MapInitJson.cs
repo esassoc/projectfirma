@@ -43,6 +43,7 @@ namespace ProjectFirma.Web.Models
         public string MapServiceUrl;
         public string ProjectDetailedLocationsPublicApprovedGeoServerLayerName;
         public string ProjectFieldDefinitionLabel;
+        public bool AutoDisplayProjectDetailedLocationsByZoom;
 
         public MapInitJson(string mapDivID, int zoomLevel, List<LayerGeoJson> layers, List<ExternalMapLayerSimple> externalMapLayers, BoundingBox boundingBox, bool turnOnFeatureIdentify)
         {

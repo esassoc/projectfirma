@@ -19,6 +19,7 @@ Source code is available upon request via <support@sitkatech.com>.
 </license>
 -----------------------------------------------------------------------*/
 
+using ProjectFirma.Web.Common;
 using ProjectFirma.Web.Models;
 using ProjectFirmaModels.Models;
 using ProjectFirma.Web.Views.Shared.ProjectLocationControls;
@@ -38,6 +39,9 @@ namespace ProjectFirma.Web.Views.Map
         {
             ProjectMapCustomization = customization;
             ProjectLocationsLayerGeoJson = projectLocationsLayerGeoJson;
+            // PF-2829: zoom-based disclosure of detailed location polygons only applies to the full project map,
+            // where the all-projects detailed locations layer matches the projects being shown
+            AutoDisplayProjectDetailedLocationsByZoom = isFullProjectMap && MultiTenantHelpers.EnableDetailedLocationPolygonsOnProjectMap();
         }
     }
 }

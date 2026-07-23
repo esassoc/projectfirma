@@ -154,8 +154,44 @@ Source code is available upon request via <support@sitkatech.com>.
         // draw the project locations
         this.addLocationLayers();
 
+        // PF-2829: when the tenant has detailed location polygons, disclose them automatically based on zoom level:
+        // simple icons only when zoomed out, detailed polygons revealed once zoomed in past the threshold
+        if (projectLocationsMapInitJson.AutoDisplayProjectDetailedLocationsByZoom)
+        {
+            this.initializeZoomBasedDetailedLocationDisclosure();
+        }
+
         // prevent standard popup for lat/long when clicking on general map area (not features)
 //        this.removeClickEventHandler();
+    };
+
+    ProjectFirmaMaps.Map.prototype.initializeZoomBasedDetailedLocationDisclosure = function()
+    {
+        var firmaMap = this;
+        // zoom level at or above which the detailed location polygons layer is shown;
+        // 9 approximates the 1:1,000,000 scale threshold discussed with the client (PF-2829)
+        var detailedLocationsDisclosureZoomLevel = 9;
+        var syncDetailedLocationsToZoom = function()
+        {
+            if (Sitka.Methods.isUndefinedNullOrEmpty(projectDetailedLocationsLayer))
+            {
+                return;
+            }
+            if (firmaMap.map.getZoom() >= detailedLocationsDisclosureZoomLevel)
+            {
+                if (!firmaMap.map.hasLayer(projectDetailedLocationsLayer))
+                {
+                    firmaMap.map.addLayer(projectDetailedLocationsLayer);
+                }
+            }
+            else if (firmaMap.map.hasLayer(projectDetailedLocationsLayer))
+            {
+                firmaMap.map.removeLayer(projectDetailedLocationsLayer);
+            }
+        };
+        this.map.on("zoomend", syncDetailedLocationsToZoom);
+        // the map may already be past the threshold when it first loads
+        syncDetailedLocationsToZoom();
     };
 
     ProjectFirmaMaps.Map.prototype.changeFilter = function(filterPropertyNameSelected, actualFilter)

@@ -165,6 +165,9 @@ namespace ProjectFirma.Web.Views.Tenant
         [DisplayName("Report Financials at project level")]
         public bool ReportFinancialsAtProjectLevel { get; set; }
 
+        [DisplayName("Auto-Display Detailed Locations on Project Map")]
+        public bool EnableDetailedLocationPolygonsOnProjectMap { get; set; }
+
         /// <summary>
         /// Needed by ModelBinder
         /// </summary>
@@ -206,6 +209,7 @@ namespace ProjectFirma.Web.Views.Tenant
             EnableSolicitations = tenantAttribute.EnableSolicitations;
             SetTargetsByGeospatialArea = tenantAttribute.SetTargetsByGeospatialArea;
             ReportFinancialsAtProjectLevel = tenantAttribute.ReportFinancialsAtProjectLevel;
+            EnableDetailedLocationPolygonsOnProjectMap = tenantAttribute.EnableDetailedLocationPolygonsOnProjectMap ?? false;
         }
 
         public void UpdateModel(TenantAttribute tenantAttribute, FirmaSession currentFirmaSession)
@@ -263,6 +267,7 @@ namespace ProjectFirma.Web.Views.Tenant
             tenantAttribute.EnableSolicitations = EnableSolicitations;
             tenantAttribute.SetTargetsByGeospatialArea = SetTargetsByGeospatialArea;
             tenantAttribute.ReportFinancialsAtProjectLevel = ReportFinancialsAtProjectLevel;
+            tenantAttribute.EnableDetailedLocationPolygonsOnProjectMap = EnableDetailedLocationPolygonsOnProjectMap;
         }
 
         public void UpdateCostTypes(List<CostType> existingCostTypes, IList<CostType> allCostTypes)
