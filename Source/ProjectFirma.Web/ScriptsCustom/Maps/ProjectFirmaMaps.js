@@ -34,6 +34,7 @@ ProjectFirmaMaps.Map = function (mapInitJson, initialBaseLayerShown)
     this.MapServiceUrl = mapInitJson.MapServiceUrl;
     this.ProjectDetailedLocationsPublicApprovedGeoServerLayerName = mapInitJson.ProjectDetailedLocationsPublicApprovedGeoServerLayerName;
     this.ProjectFieldDefinitionLabel = mapInitJson.ProjectFieldDefinitionLabel;
+    this.AutoDisplayProjectDetailedLocationsByZoom = mapInitJson.AutoDisplayProjectDetailedLocationsByZoom;
 
     firmaMap.mapLayers = [];
     firmaMap.externalFeatureLayers = mapInitJson.ExternalMapLayerSimples.filter(function(x) {
@@ -340,6 +341,12 @@ ProjectFirmaMaps.Map.prototype.bindPopupToFeature = function (layer, feature) {
             function (e) {
                 var latlng = e.target.getLatLng();
                 firmaMap.map.setView(latlng);
+                // PF-2830: one-way linking from a project's simple icon to its detailed polygon(s);
+                // rides along with detailed-polygon display (PF-2829), no independent toggle
+                if (firmaMap.AutoDisplayProjectDetailedLocationsByZoom &&
+                    !Sitka.Methods.isUndefinedNullOrEmpty(feature.properties.ProjectID)) {
+                    firmaMap.highlightProjectDetailedLocations(feature.properties.ProjectID);
+                }
                 jQuery.get(feature.properties.PopupUrl).done(function(data) {
                     layer.bindPopup(data).openPopup();
                 });
@@ -576,6 +583,46 @@ ProjectFirmaMaps.Map.prototype.openPopupIncludingAsyncContent = function (respon
     firmaMap.map.openPopup(L.popup({ maxWidth: 200 }).setLatLng(latlng).setContent(firmaMap.htmlPopupContents(allLayers)).openOn(firmaMap.map));
 }
 
+// Highlight all of a Project's Detailed Locations by querying GeoServer for its polygons
+// and drawing them into the module-global highlightOverlay (replacing any existing highlight)
+ProjectFirmaMaps.Map.prototype.highlightProjectDetailedLocations = function (projectID) {
+    if (!this.MapServiceUrl) {
+        return;
+    }
+    if (highlightOverlay) {
+        highlightOverlay.remove();
+    }
+    var projectLocationDetailedWfsParams = {
+        service: "WFS",
+        version: "2.0",
+        request: "GetFeature",
+        outputFormat: "application/json",
+        SrsName: "EPSG:4326",
+        maxFeatures: 10000,
+        typeNames: this.ProjectDetailedLocationsPublicApprovedGeoServerLayerName,
+        cql_filter: 'ProjectID=' + projectID
+    };
+
+    jQuery.ajax({
+        url: this.MapServiceUrl +
+            L.Util.getParamString(projectLocationDetailedWfsParams),
+        dataType: 'json'
+    }).done(function (data) {
+        if (data.features.length > 0) {
+            //Highlight feature(s) with new layer
+            var highlightStyle = {
+                "color": "#2dc3a1",
+                "weight": 2,
+                "opacity": 0.5
+            };
+            highlightOverlay = L.geoJSON(data, { style: highlightStyle });
+            highlightOverlay.addTo(mapOutsideScope);
+        }
+    }).fail(function (data) {
+        console.log(data);
+    });
+};
+
 ProjectFirmaMaps.Map.prototype.formatGeospatialAreaResponse = function (json) {
     var deferred = new jQuery.Deferred();
     if (json.features.length > 0) {
@@ -592,37 +639,7 @@ ProjectFirmaMaps.Map.prototype.formatGeospatialAreaResponse = function (json) {
                 });
                 break;
             case "ProjectLocationGeometry":
-                if (this.MapServiceUrl) {
-                    var projectLocationDetailedWfsParams = {
-                        service: "WFS",
-                        version: "2.0",
-                        request: "GetFeature",
-                        outputFormat: "application/json",
-                        SrsName: "EPSG:4326",
-                        maxFeatures: 10000,
-                        typeNames: this.ProjectDetailedLocationsPublicApprovedGeoServerLayerName,
-                        cql_filter: 'ProjectID=' + firstFeature.properties.ProjectID
-                    };
-
-                    jQuery.ajax({
-                        url: this.MapServiceUrl +
-                            L.Util.getParamString(projectLocationDetailedWfsParams),
-                        dataType: 'json'
-                    }).done(function (data) {
-                        if (data.features.length > 0) {
-                            //Highlight feature(s) with new layer
-                            var highlightStyle = {
-                                "color": "#2dc3a1",
-                                "weight": 2,
-                                "opacity": 0.5
-                            };
-                            highlightOverlay = L.geoJSON(data, { style: highlightStyle });
-                            highlightOverlay.addTo(mapOutsideScope);
-                        }
-                    }).fail(function (data) {
-                        console.log(data);
-                    });
-                }
+                this.highlightProjectDetailedLocations(firstFeature.properties.ProjectID);
 
                 if (jQuery("#" + this.MapDivId).height() < 400) {
                     linkHtml = "<a title='' href='/Project/Detail/" + json.features[0].properties.ProjectID + "'>" + json.features[0].properties.ProjectName + "</a>";
