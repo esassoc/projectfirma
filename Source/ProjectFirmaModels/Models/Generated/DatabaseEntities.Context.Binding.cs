@@ -201,6 +201,7 @@ namespace ProjectFirmaModels.Models
             modelBuilder.Configurations.Add(new TrainingVideoConfiguration());
             modelBuilder.Configurations.Add(new TrainingVideoRoleConfiguration());
             modelBuilder.Configurations.Add(new vGeoServerGeospatialAreaConfiguration());
+            modelBuilder.Configurations.Add(new vGeoServerProjectAttributesConfiguration());
             modelBuilder.Configurations.Add(new vGeoServerProjectDetailedLocationsConfiguration());
             modelBuilder.Configurations.Add(new vGeoServerProjectSimpleLocationsConfiguration());
             modelBuilder.Configurations.Add(new vGeospatialAreaConfiguration());
@@ -524,6 +525,7 @@ namespace ProjectFirmaModels.Models
         public virtual DbSet<TrainingVideo> AllTrainingVideos { get; set; }
         public virtual IQueryable<TrainingVideo> TrainingVideos { get { return AllTrainingVideos.Where(x => x.TenantID == TenantID); } }
         public virtual DbSet<vGeoServerGeospatialArea> vGeoServerGeospatialAreas { get; set; }
+        public virtual DbSet<vGeoServerProjectAttributes> vGeoServerProjectAttributes { get; set; }
         public virtual DbSet<vGeoServerProjectDetailedLocations> vGeoServerProjectDetailedLocations { get; set; }
         public virtual DbSet<vGeoServerProjectSimpleLocations> vGeoServerProjectSimpleLocations { get; set; }
         public virtual DbSet<vGeospatialArea> vGeospatialAreas { get; set; }

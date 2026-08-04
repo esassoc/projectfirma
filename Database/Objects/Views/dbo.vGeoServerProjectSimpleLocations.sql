@@ -11,8 +11,21 @@ select
     p.ProjectName,
     p.ProjectLocationPoint,
     p.TenantID,
-    t.TenantName
+    t.TenantName,
+    pa.ProjectDescription,
+    pa.ProjectStage,
+    pa.TaxonomyLeaf,
+    pa.PrimaryContactOrganization,
+    pa.PrimaryContactPerson,
+    pa.PlanningDesignStartYear,
+    pa.ImplementationStartYear,
+    pa.CompletionYear,
+    pa.SecuredFunding,
+    pa.TargetedFunding,
+    pa.EstimatedTotalCost,
+    pa.ProjectLastUpdated
 from
 	dbo.Project p
 	join dbo.Tenant t on p.TenantID = t.TenantID
+	join dbo.vGeoServerProjectAttributes pa on p.ProjectID = pa.ProjectID
     where LocationIsPrivate = 0 and ProjectLocationPoint is not null

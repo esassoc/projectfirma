@@ -766,6 +766,8 @@
     <Compile Include="Models\Generated\TrainingVideoRolePrimaryKey.Binding.cs" />
     <Compile Include="Models\Generated\vGeoServerGeospatialArea.Binding.cs" />
     <Compile Include="Models\Generated\vGeoServerGeospatialAreaConfiguration.Binding.cs" />
+    <Compile Include="Models\Generated\vGeoServerProjectAttributes.Binding.cs" />
+    <Compile Include="Models\Generated\vGeoServerProjectAttributesConfiguration.Binding.cs" />
     <Compile Include="Models\Generated\vGeoServerProjectDetailedLocations.Binding.cs" />
     <Compile Include="Models\Generated\vGeoServerProjectDetailedLocationsConfiguration.Binding.cs" />
     <Compile Include="Models\Generated\vGeoServerProjectSimpleLocations.Binding.cs" />
