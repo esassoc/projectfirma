@@ -49,11 +49,11 @@ repointed. No other tenant's layers change, and no app code changes (layer names
 5. Spot-check another tenant's layer (e.g. NCRPProjectTracker) — it should **not** carry the fuels columns.
 6. Confirm the TCSI in-app Project Map still renders simple + detailed locations and stage colors
    (no UI change expected).
-7. Commit the `nativeName` edits in the svn data_dir snapshot
-   (`C:\svn\sitkatech\trunk\ProjectFirma\GeoServerDocker\data_dir\workspaces\TCSProjectTracker\GeoServerSqlDataSource\*\featuretype.xml`)
-   so the Docker image stays reproducible. The 7 files are already edited in the local svn working
-   copy (2026-08-04) — do **not** commit them to svn until the QA DB release has run, or a rebuilt
-   GeoServer container would point at views that don't exist yet.
+7. The `nativeName` edits are already committed to the svn data_dir snapshot as **r218740**
+   (`C:\svn\sitkatech\trunk\ProjectFirma\GeoServerDocker\data_dir\workspaces\TCSProjectTracker\GeoServerSqlDataSource\*\featuretype.xml`),
+   so the Docker image stays reproducible. Because of that, do **not** rebuild/redeploy the GeoServer
+   image into an environment until that environment's DB release has run — the container would point
+   at views that don't exist yet.
 
 ## Caveats for GIS data consumers
 
