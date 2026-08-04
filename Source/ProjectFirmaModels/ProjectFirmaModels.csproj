@@ -772,6 +772,12 @@
     <Compile Include="Models\Generated\vGeoServerProjectDetailedLocationsConfiguration.Binding.cs" />
     <Compile Include="Models\Generated\vGeoServerProjectSimpleLocations.Binding.cs" />
     <Compile Include="Models\Generated\vGeoServerProjectSimpleLocationsConfiguration.Binding.cs" />
+    <Compile Include="Models\Generated\vGeoServerTcsiForestFuelsTreatmentAcres.Binding.cs" />
+    <Compile Include="Models\Generated\vGeoServerTcsiForestFuelsTreatmentAcresConfiguration.Binding.cs" />
+    <Compile Include="Models\Generated\vGeoServerTcsiProjectDetailedLocations.Binding.cs" />
+    <Compile Include="Models\Generated\vGeoServerTcsiProjectDetailedLocationsConfiguration.Binding.cs" />
+    <Compile Include="Models\Generated\vGeoServerTcsiProjectSimpleLocations.Binding.cs" />
+    <Compile Include="Models\Generated\vGeoServerTcsiProjectSimpleLocationsConfiguration.Binding.cs" />
     <Compile Include="Models\Generated\vGeospatialArea.Binding.cs" />
     <Compile Include="Models\Generated\vGeospatialAreaConfiguration.Binding.cs" />
     <Compile Include="Models\Generated\vProjectAttachment.Binding.cs" />
