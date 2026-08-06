@@ -99,6 +99,10 @@ namespace ProjectFirma.Web.ScheduledJobs
             {
                 var databaseEntities = new DatabaseEntities(tenantID);
                 var client = new HttpClient();
+                // The Projects API now lives on LtInfo.Scalar and authenticates via a shared secret in
+                // the X-LtInfo-Integration-Key header (no query-string key). Every call this job makes goes
+                // to Scalar, so set the header once on the client.
+                client.DefaultRequestHeaders.Add("X-LtInfo-Integration-Key", FirmaWebConfiguration.LTInfoApiKey);
 
                 var projects = databaseEntities.AllProjects.Where(x => x.TenantID == tenantID && x.ExternalID.HasValue).ToList();
                 var externalIDs = projects.Select(x => x.ExternalID.Value).ToList();
@@ -119,10 +123,9 @@ namespace ProjectFirma.Web.ScheduledJobs
 
                 var recentlyModifiedExternalIDs = new List<int>();
 
-                // apiUrl is the LtInfo API origin only (e.g. https://host), no path. The Projects
-                // API lives under /api/projects (see LtInfo swagger); file resources live at root
-                // under /file-resources, so the sub-paths are carried here rather than in apiUrl.
-                var getAllProjectsUrl = $"{apiUrl}/api/projects/all-projects?apiKey={FirmaWebConfiguration.LTInfoApiKey}&{queryParameter}";
+                // apiUrl is the LtInfo.Scalar origin only (e.g. https://host), no path. The Projects
+                // API lives under /api/projects; auth is via the X-LtInfo-Integration-Key header set above.
+                var getAllProjectsUrl = $"{apiUrl}/api/projects/all-projects?{queryParameter}";
                 var response = await client.GetAsync(getAllProjectsUrl);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -164,7 +167,7 @@ namespace ProjectFirma.Web.ScheduledJobs
                 }
                 foreach (var project in projectsMissingPrimaryContact)
                 {
-                    var getProjectUrl = $"{apiUrl}/api/projects/{project.ExternalID}?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
+                    var getProjectUrl = $"{apiUrl}/api/projects/{project.ExternalID}";
                     var projectResponse = await client.GetAsync(getProjectUrl);
                     if (!projectResponse.IsSuccessStatusCode)
                     {

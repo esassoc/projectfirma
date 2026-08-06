@@ -49,6 +49,9 @@ namespace ProjectFirma.Web.ScheduledJobs
             {
                 var databaseEntities = new DatabaseEntities(tenantID);
                 var client = new HttpClient();
+                // Everything this job calls (projects + file-resource image bytes) lives on LtInfo.Scalar
+                // and authenticates via the X-LtInfo-Integration-Key header, so set it once on the client.
+                client.DefaultRequestHeaders.Add("X-LtInfo-Integration-Key", FirmaWebConfiguration.LTInfoApiKey);
 
                 var projects = databaseEntities.AllProjects.Where(x => x.TenantID == tenantID && x.ExternalID.HasValue).ToList();
                 var externalIDs = projects.Select(x => x.ExternalID.Value).ToList();
@@ -69,9 +72,9 @@ namespace ProjectFirma.Web.ScheduledJobs
 
                 var recentlyModifiedExternalIDs = new List<int>();
 
-                // apiUrl is the LtInfo API origin only (e.g. https://host), no path. Projects live
-                // under /api/projects; file resources live at root under /file-resources.
-                var getRecentlyModifiedProjectsUrl = $"{apiUrl}/api/projects/recently-modified?apiKey={FirmaWebConfiguration.LTInfoApiKey}&{queryParameter}";
+                // apiUrl is the LtInfo.Scalar origin (no path). Projects live under /api/projects and
+                // file-resource bytes under /file-resources — both on Scalar, both header-authenticated.
+                var getRecentlyModifiedProjectsUrl = $"{apiUrl}/api/projects/recently-modified?{queryParameter}";
                 var response = await client.GetAsync(getRecentlyModifiedProjectsUrl);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -93,7 +96,7 @@ namespace ProjectFirma.Web.ScheduledJobs
                     var project = projects.Single(x => x.ExternalID == externalID);
                     Logger.Info($"Starting Project Images sync for ProjectID: {project?.ProjectID}; ExternalID: {externalID}");
 
-                    var getProjectImagesUrl = $"{apiUrl}/api/projects/{externalID}/project-images?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
+                    var getProjectImagesUrl = $"{apiUrl}/api/projects/{externalID}/project-images";
                     var getProjectImages = await client.GetAsync(getProjectImagesUrl);
                     if (!getProjectImages.IsSuccessStatusCode)
                     {
@@ -157,9 +160,10 @@ namespace ProjectFirma.Web.ScheduledJobs
                     continue;
                 }
 
-                // get file resource from lt info api
-                // File resources are served at the API root under /file-resources (NOT under /api).
-                var getFileResource = $"{apiUrl}/file-resources/GetWithApiKey/{projectImageSimpleDto.FileResourceInfo.FileResourceInfoGUID}?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
+                // get file resource bytes from LtInfo.Scalar (a duplicate of the internal API's endpoint,
+                // gated by the X-LtInfo-Integration-Key header set on the client). The internal LtInfo.API
+                // still serves /file-resources/* for the SPA, but ProjectFirma calls only Scalar.
+                var getFileResource = $"{apiUrl}/file-resources/{projectImageSimpleDto.FileResourceInfo.FileResourceInfoGUID}";
 
                 var response = await client.GetAsync(getFileResource);
                 if (!response.IsSuccessStatusCode)
