@@ -1,29 +1,38 @@
-﻿function HtmlLinkJsonRenderer(params) {
+// Escapes a string for safe use as HTML text content or inside a double-quoted attribute.
+// DisplayText/Link come from user-entered data (person names, project names, etc.), so they must
+// never be interpolated into markup unescaped. Opt out only via DisplayTextIsHtml, which callers
+// set from C# when the display text is trusted markup they built themselves (glyph icons, etc.).
+function htmlLinkEscapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function HtmlLinkJsonRenderer(params) {
     if (!params.value) {
         return "";
     }
     var jsonObj = JSON.parse(params.value);
+
+    // Trusted markup only when the server explicitly says so; otherwise escape.
+    var displayHtml = jsonObj.DisplayTextIsHtml
+        ? jsonObj.DisplayText
+        : htmlLinkEscapeHtml(jsonObj.DisplayText);
+
     if (jsonObj.Link && jsonObj.DisplayText) {
         // Derive a plain-text aria-label from the DisplayText (strip any HTML such as leading <span>)
         var tmp = document.createElement('div');
-        tmp.innerHTML = jsonObj.DisplayText;
+        tmp.innerHTML = displayHtml;
         var ariaText = tmp.textContent || tmp.innerText || '';
 
-        // HTML-escape the ariaText so it is safe to use inside an attribute
-        function escapeAttribute(str) {
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/"/g, '&quot;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-        }
+        var ariaLabelValue = htmlLinkEscapeHtml(ariaText);
 
-        var ariaLabelValue = escapeAttribute(ariaText);
-
-        // Return an HTML string for accessibility and keyboard navigation. Use the original DisplayText as the link innerHTML
-        return `<a href="${jsonObj.Link}" tabindex="0" aria-label="${ariaLabelValue}" class="ag-grid-link">${jsonObj.DisplayText}</a>`;
+        return `<a href="${htmlLinkEscapeHtml(jsonObj.Link)}" tabindex="0" aria-label="${ariaLabelValue}" class="ag-grid-link">${displayHtml}</a>`;
     } else if (jsonObj.DisplayText) {
-        return jsonObj.DisplayText;
+        return displayHtml;
     }
     return "";
 }

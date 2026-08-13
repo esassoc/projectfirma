@@ -26,6 +26,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Web;
 using System.Web.Mvc;
 using log4net;
 using ProjectFirmaModels.Models;
@@ -167,7 +168,8 @@ namespace ProjectFirma.Web.Controllers
             var canDelete = personToDelete.CanDeletePerson(CurrentPerson);
 
             var confirmMessage = canDelete
-                ? $"Are you sure you want to delete {personToDelete.GetFullNameFirstLastAndOrg()}?"
+                // ConfirmMessage is rendered with Html.Raw into an AJAX-injected dialog, so encode the user-entered name.
+                ? $"Are you sure you want to delete {HttpUtility.HtmlEncode(personToDelete.GetFullNameFirstLastAndOrg())}?"
                 : ConfirmDialogFormViewData.GetStandardCannotDeletePersonMessage("Person",
                     SitkaRoute<UserController>.BuildLinkFromExpression(x => x.Detail(personToDelete), "User profile page"));
 
@@ -265,6 +267,11 @@ namespace ProjectFirma.Web.Controllers
 
         private PartialViewResult ViewActivateInactivatePerson(Person person, ConfirmDialogFormViewModel viewModel)
         {
+            // ConfirmMessage is rendered with Html.Raw (it intentionally carries markup such as the <ul> below), and the
+            // dialog is injected into the page by jQuery, which executes any script tags in it. So user-entered values
+            // interpolated into the message must be encoded here.
+            var encodedFullName = HttpUtility.HtmlEncode(person.GetFullNameFirstLast());
+
             string confirmMessage;
             if (person.IsActive)
             {
@@ -275,10 +282,10 @@ namespace ProjectFirma.Web.Controllers
                 if (isPrimaryContactForAnyOrganization)
                 {
                     optionalOrganizationPrimaryContactWarnings =
-                        $@"{person.GetFullNameFirstLast()} is the {FieldDefinitionEnum.OrganizationPrimaryContact.ToType().GetFieldDefinitionLabel()} for the following organizations: <ul> {string.Join("\r\n", person.GetPrimaryContactOrganizations().Select(x => $"<li>{x.OrganizationName}</li>"))}</ul>";
+                        $@"{encodedFullName} is the {FieldDefinitionEnum.OrganizationPrimaryContact.ToType().GetFieldDefinitionLabel()} for the following organizations: <ul> {string.Join("\r\n", person.GetPrimaryContactOrganizations().Select(x => $"<li>{HttpUtility.HtmlEncode(x.OrganizationName)}</li>"))}</ul>";
                 }
 
-                confirmMessage = $"{optionalOrganizationPrimaryContactWarnings}Are you sure you want to inactivate user '{person.GetFullNameFirstLast()}'?";
+                confirmMessage = $"{optionalOrganizationPrimaryContactWarnings}Are you sure you want to inactivate user '{encodedFullName}'?";
 
                 var viewData = new ConfirmDialogFormViewData(confirmMessage, confirmDialogCanProceed);
                 return RazorPartialView<ConfirmDialogForm, ConfirmDialogFormViewData, ConfirmDialogFormViewModel>(
@@ -286,7 +293,7 @@ namespace ProjectFirma.Web.Controllers
             }
             else
             {
-                confirmMessage = $"Are you sure you want to activate user '{person.GetFullNameFirstLast()}'?";
+                confirmMessage = $"Are you sure you want to activate user '{encodedFullName}'?";
                 var viewData = new ConfirmDialogFormViewData(confirmMessage, true);
                 return RazorPartialView<ConfirmDialogForm, ConfirmDialogFormViewData, ConfirmDialogFormViewModel>(
                     viewData, viewModel);

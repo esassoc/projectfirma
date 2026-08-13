@@ -278,7 +278,11 @@ namespace LtInfo.Common.AgGridWrappers
                 }
 
                 columnDefinitionStringBuilder.Append("{ "); //open this column spec
-                columnDefinitionStringBuilder.AppendFormat("\"field\": \"{0}\"", columnSpec.ColumnNameForJavascript);
+                // Column names can come from admin-configurable field definition labels, and are emitted here inside
+                // JavaScript string literals. JS-string encoding keeps a quote (or a "</script>") in a label from
+                // breaking out of the literal; the escapes decode back to the original characters at runtime, so the
+                // resulting field key and header text are unchanged.
+                columnDefinitionStringBuilder.AppendFormat("\"field\": \"{0}\"", HttpUtility.JavaScriptStringEncode(columnSpec.ColumnNameForJavascript));
 
                 if (columnSpec.AgGridColumnSortType.SortingType.Equals("htmlstring"))
                 {
@@ -287,7 +291,7 @@ namespace LtInfo.Common.AgGridWrappers
                         ", \"comparator\":  (valueA, valueB, nodeA, nodeB, isDescending) => { var valueANoHtml = removeHtmlFromString(valueA); var valueBNoHtml = removeHtmlFromString(valueB); if (valueANoHtml == valueBNoHtml) return 0; return (valueANoHtml > valueBNoHtml) ? 1 : -1; }");
                 }
 
-                columnDefinitionStringBuilder.AppendFormat(", \"headerName\": \"{0}\"", columnSpec.ColumnNameInnerText);
+                columnDefinitionStringBuilder.AppendFormat(", \"headerName\": \"{0}\"", HttpUtility.JavaScriptStringEncode(columnSpec.ColumnNameInnerText));
 
                 columnDefinitionStringBuilder.Append(
                     ", \"headerComponentParams\": { \"template\": \"<div class=\\\"ag-cell-label-container\\\">");
@@ -505,7 +509,11 @@ namespace LtInfo.Common.AgGridWrappers
                 gridName, //0
                 optionalGridDataUrl, //1
                 columnDefinitionStringBuilder, //2 
-                gridSpec.ObjectNamePlural, //3
+                // ObjectNamePlural can contain user-entered data (e.g. a person's name) and is emitted inside a
+                // JavaScript string literal in the template below, so it needs JS-string encoding, not HTML encoding.
+                // JavaScriptStringEncode also escapes < and > as </>, which prevents a "</script>" in the
+                // value from closing the inline script block.
+                HttpUtility.JavaScriptStringEncode(gridSpec.ObjectNamePlural), //3
                 resizeGridFunction, //4
                 makeVerticalResizable, //5
                 styleString, //6
@@ -618,7 +626,7 @@ namespace LtInfo.Common.AgGridWrappers
         /// <returns></returns>
         public static HtmlString MakeEditIconAsHyperlinkBootstrap(string editUrl, bool hasPermission)
         {
-            return hasPermission ? UrlTemplate.MakeHrefString(editUrl,
+            return hasPermission ? UrlTemplate.MakeHrefStringWithHtmlLinkText(editUrl,
                 $"{EditIconBootstrap}<span style=\"display:none\">Edit</span>") : new HtmlString(string.Empty);
         }
 
@@ -748,7 +756,9 @@ namespace LtInfo.Common.AgGridWrappers
         /// <returns></returns>
         public static string CreateCreateUrlHtml(string createUrl, string createUrlClass, ModalDialogForm createPopupForm, string createActionPhrase, string objectNameSingular)
         {
-            var createString = !string.IsNullOrEmpty(createActionPhrase) ? createActionPhrase : $"Create New {objectNameSingular}";
+            // objectNameSingular can contain user-entered data (e.g. a person's name), and createString is emitted
+            // below both as element text and as a title attribute, so encode it here rather than at each use.
+            var createString = HttpUtility.HtmlEncode(!string.IsNullOrEmpty(createActionPhrase) ? createActionPhrase : $"Create New {objectNameSingular}");
             var createUrlHtml = String.Empty;
             if (!String.IsNullOrWhiteSpace(createUrl))
             {

@@ -30,10 +30,28 @@ namespace LtInfo.Common.AgGridWrappers
 
         public string Link { get; set; }
 
+        /// <summary>
+        /// When false (the default), the ag-grid renderers HTML-escape <see cref="DisplayText"/> before putting it in the DOM.
+        /// Set this only via <see cref="WithHtmlDisplayText"/>, for display text that is trusted markup built in our own code.
+        /// Note that <see cref="DisplayText"/> is also used for grid sorting/filtering/export, so it is deliberately stored
+        /// unencoded here and escaped at the point it becomes HTML.
+        /// </summary>
+        public bool DisplayTextIsHtml { get; set; }
+
         public HtmlLinkObject(string displayText, string link)
         {
             DisplayText = displayText;
             Link = link;
+            DisplayTextIsHtml = false;
+        }
+
+        /// <summary>
+        /// For links whose display text is trusted markup (glyph icons, etc.). Any user-entered data embedded in
+        /// <paramref name="displayTextHtml"/> must already be HTML encoded by the caller.
+        /// </summary>
+        public static HtmlLinkObject WithHtmlDisplayText(string displayTextHtml, string link)
+        {
+            return new HtmlLinkObject(displayTextHtml, link) { DisplayTextIsHtml = true };
         }
     }
 
