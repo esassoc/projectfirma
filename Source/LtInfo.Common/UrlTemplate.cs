@@ -622,12 +622,38 @@ namespace LtInfo.Common
 
         public static HtmlString MakeHrefString(string url, string linkText, string titleText, Dictionary<string, string> attributeDict)
         {
-            return new HtmlString(string.Format("<a title=\"{2}\" href=\"{0}\"{3}>{1}</a>", url, linkText, titleText, BuildAttributeString(attributeDict)));
+            return MakeHrefStringImpl(url, HttpUtility.HtmlEncode(linkText), titleText, attributeDict);
+        }
+
+        /// <summary>
+        /// Same as <see cref="MakeHrefString(string,string,string,System.Collections.Generic.Dictionary{string,string})"/>, except that
+        /// <paramref name="linkTextHtml"/> is emitted as-is instead of being HTML encoded. ONLY for callers that build the link
+        /// contents out of trusted markup (glyph icons, etc.). If any part of the link text comes from user-entered data, encode
+        /// that part yourself before calling this, or use MakeHrefString instead.
+        /// </summary>
+        public static HtmlString MakeHrefStringWithHtmlLinkText(string url, string linkTextHtml, string titleText, Dictionary<string, string> attributeDict)
+        {
+            return MakeHrefStringImpl(url, linkTextHtml, titleText, attributeDict);
+        }
+
+        public static HtmlString MakeHrefStringWithHtmlLinkText(string url, string linkTextHtml)
+        {
+            return MakeHrefStringImpl(url, linkTextHtml, null, null);
+        }
+
+        public static HtmlString MakeHrefStringWithHtmlLinkText(string url, string linkTextHtml, Dictionary<string, string> attributeDict)
+        {
+            return MakeHrefStringImpl(url, linkTextHtml, null, attributeDict);
+        }
+
+        private static HtmlString MakeHrefStringImpl(string url, string linkTextHtml, string titleText, Dictionary<string, string> attributeDict)
+        {
+            return new HtmlString(string.Format("<a title=\"{2}\" href=\"{0}\"{3}>{1}</a>", HttpUtility.HtmlAttributeEncode(url), linkTextHtml, HttpUtility.HtmlAttributeEncode(titleText), BuildAttributeString(attributeDict)));
         }
 
         public static HtmlString MakeHrefStringWithCurrentPage(string url, string linkText, string titleText, Dictionary<string, string> attributeDict)
         {
-            return new HtmlString(string.Format("<a aria-current=\"page\" title=\"{2}\" href=\"{0}\"{3}>{1}</a>", url, linkText, titleText, BuildAttributeString(attributeDict)));
+            return new HtmlString(string.Format("<a aria-current=\"page\" title=\"{2}\" href=\"{0}\"{3}>{1}</a>", HttpUtility.HtmlAttributeEncode(url), HttpUtility.HtmlEncode(linkText), HttpUtility.HtmlAttributeEncode(titleText), BuildAttributeString(attributeDict)));
         }
 
         private static string BuildAttributeString(Dictionary<string, string> attributeDict)
@@ -637,7 +663,7 @@ namespace LtInfo.Common
                 return string.Empty;
             }
 
-            return string.Format(" {0}", attributeDict.Aggregate(" ", (current, attribute) => current + String.Format(" {0}=\"{1}\"", attribute.Key, attribute.Value)));
+            return string.Format(" {0}", attributeDict.Aggregate(" ", (current, attribute) => current + String.Format(" {0}=\"{1}\"", attribute.Key, HttpUtility.HtmlAttributeEncode(attribute.Value))));
         }
     }
     public class LtInfoAnchorHtmlTag : IHtmlString

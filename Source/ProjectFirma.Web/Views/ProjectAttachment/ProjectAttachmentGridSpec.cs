@@ -20,6 +20,7 @@ Source code is available upon request via <support@sitkatech.com>.
 -----------------------------------------------------------------------*/
 
 using System.Collections.Generic;
+using System.Web;
 using LtInfo.Common;
 using LtInfo.Common.BootstrapWrappers;
 using LtInfo.Common.AgGridWrappers;
@@ -46,7 +47,7 @@ namespace ProjectFirma.Web.Views.ProjectAttachment
                     30, AgGridColumnFilterType.None);
             }
 
-            Add($"Attachment Name", a => UrlTemplate.MakeHrefString(a.GetFileResourceUrl(), a.ProjectAttachmentDisplayName + " " + BootstrapHtmlHelpers.MakeGlyphIcon("glyphicon-download"), new Dictionary<string, string> { { "target", "_blank" } }), 240, AgGridColumnFilterType.Html);
+            Add($"Attachment Name", a => UrlTemplate.MakeHrefStringWithHtmlLinkText(a.GetFileResourceUrl(), HttpUtility.HtmlEncode(a.ProjectAttachmentDisplayName) + " " + BootstrapHtmlHelpers.MakeGlyphIcon("glyphicon-download"), new Dictionary<string, string> { { "target", "_blank" } }), 240, AgGridColumnFilterType.Html);
             Add($"Attachment Description", a => a.ProjectAttachmentDescription, 240);
             
             Add($"{projectFieldDefinitionLabel} Name", a => UrlTemplate.MakeHrefString(a.GetProjectDetailUrl(), a.ProjectName), 240, AgGridColumnFilterType.Text);

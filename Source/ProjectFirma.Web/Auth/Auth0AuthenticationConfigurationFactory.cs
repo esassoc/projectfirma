@@ -414,12 +414,18 @@ namespace ProjectFirma.Web.Auth
         {
             var subject =
                 $"{MultiTenantHelpers.GetToolDisplayName()} User added: {person.GetFullNameFirstLast()} ({person.GetOrganizationDescriptor()})";
+            // This is an HTML email body, and every one of these values is attacker-controlled for a self-registered
+            // user, so encode them here at the point they become HTML.
+            var encodedFullName = HttpUtility.HtmlEncode(person.GetFullNameFirstLast());
+            var encodedOrganizationDescriptor = HttpUtility.HtmlEncode(person.GetOrganizationDescriptor());
+            var encodedEmail = HttpUtility.HtmlEncode(person.Email);
+            var encodedLoginName = HttpUtility.HtmlEncode(loginName);
             var message = $@"
                 <div style='font-size: 12px; font-family: Arial'>
-                        <strong>User added:</strong> {person.GetFullNameFirstLast()}<br />
-                        <strong>Organization</strong> {person.GetOrganizationDescriptor()} <br />
+                        <strong>User added:</strong> {encodedFullName}<br />
+                        <strong>Organization</strong> {encodedOrganizationDescriptor} <br />
                         <strong>Added on:</strong> {DateTime.Now}<br />
-                        <strong>Email:</strong> {person.Email}<br />
+                        <strong>Email:</strong> {encodedEmail}<br />
                         <br />
                         <p>
                             You may want to <a href=""{SitkaRoute<UserController>.BuildAbsoluteUrlFromExpression(x => x.Detail(person.PersonID))}"">assign this user roles</a> to allow them to work with specific areas of the site. Or you can leave the user with an unassigned role if they don't need special privileges.
@@ -427,7 +433,7 @@ namespace ProjectFirma.Web.Auth
                         <br />
                     <div style='font-size: 10px; color: gray'>
                     OTHER DETAILS:<br />
-                    LOGIN: {loginName}<br />
+                    LOGIN: {encodedLoginName}<br />
                     <br />
                     </div>
                     <div>{$"- {MultiTenantHelpers.GetToolDisplayName()} team"}<br/><br/><img src=""cid:tool-logo"" width=""160"" /></div>

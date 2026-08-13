@@ -32,17 +32,17 @@ namespace LtInfo.Common.BootstrapWrappers
 
         public static HtmlString MakeGlyphIconWithHiddenText(string glyphIconName, string text)
         {
-            return new HtmlString(string.Format("<span role=\"img\" title=\"{0}\"  class=\"glyphicon {0}\"></span><span style='display:none'>{1}</span>", glyphIconName, text));
+            return new HtmlString(string.Format("<span role=\"img\" title=\"{0}\"  class=\"glyphicon {0}\"></span><span style='display:none'>{1}</span>", glyphIconName, HttpUtility.HtmlEncode(text)));
         }
 
         public static HtmlString MakeGlyphIconWithScreenReaderOnlyText(string glyphIconName, string screenReaderOnlyText)
         {
-            return new HtmlString(string.Format("<span role=\"img\" title=\"{0}\"  class=\"glyphicon {0}\"></span><span class=\"sr-only\">{1}</span>", glyphIconName, screenReaderOnlyText));
+            return new HtmlString(string.Format("<span role=\"img\" title=\"{0}\"  class=\"glyphicon {0}\"></span><span class=\"sr-only\">{1}</span>", glyphIconName, HttpUtility.HtmlEncode(screenReaderOnlyText)));
         }
 
         public static HtmlString MakeGlyphIcon(string glyphIconName, string title)
         {
-            return new HtmlString(string.Format("<span role=\"img\"  title=\"{0}\" class=\"glyphicon {1}\"></span>", title, glyphIconName));
+            return new HtmlString(string.Format("<span role=\"img\"  title=\"{0}\" class=\"glyphicon {1}\"></span>", HttpUtility.HtmlAttributeEncode(title), glyphIconName));
         }
 
         //TODO: This is fragile when quotes or apostrophes are passed in to any of the string parameters.

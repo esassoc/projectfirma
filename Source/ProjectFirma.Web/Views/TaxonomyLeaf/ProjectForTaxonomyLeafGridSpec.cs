@@ -24,7 +24,7 @@ namespace ProjectFirma.Web.Views.TaxonomyLeaf
                 Add("ProjectID", x => x.ProjectID, 0);
             }
 
-            Add("Fact Sheet", x => UrlTemplate.MakeHrefString(x.GetFactSheetUrl(), FirmaAgGridHtmlHelpers.FactSheetIcon.ToString()), 30, AgGridColumnFilterType.None);
+            Add("Fact Sheet", x => UrlTemplate.MakeHrefStringWithHtmlLinkText(x.GetFactSheetUrl(), FirmaAgGridHtmlHelpers.FactSheetIcon.ToString()), 30, AgGridColumnFilterType.None);
             Add(FieldDefinitionEnum.ProjectName.ToType().ToGridHeaderString(), x => new HtmlLinkObject(x.ProjectName, x.GetDetailUrl()).ToJsonObjectForAgGrid(), 300, AgGridColumnFilterType.HtmlLinkJson);
             if (MultiTenantHelpers.GetTenantAttributeFromCache().EnableSecondaryProjectTaxonomyLeaf)
             {
