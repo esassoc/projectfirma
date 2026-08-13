@@ -400,7 +400,8 @@ namespace ProjectFirma.Web.Views.ProjectCustomGrid
         private static string MakeFactSheetUrlJson(ProjectFirmaModels.Models.Project project)
         {
 
-            return new HtmlLinkObject($"{FirmaAgGridHtmlHelpers.FactSheetIcon.ToString().Replace("\"", "'")}<span class='sr-only'>Download the Fact Sheet for {project.ProjectName}</span>",project.GetFactSheetUrl()).ToJsonObjectForAgGrid();
+            // Trusted markup (icon + sr-only label), so the project name embedded in it must be encoded here.
+            return HtmlLinkObject.WithHtmlDisplayText($"{FirmaAgGridHtmlHelpers.FactSheetIcon.ToString().Replace("\"", "'")}<span class='sr-only'>Download the Fact Sheet for {HttpUtility.HtmlEncode(project.ProjectName)}</span>", project.GetFactSheetUrl()).ToJsonObjectForAgGrid();
             
         }
 

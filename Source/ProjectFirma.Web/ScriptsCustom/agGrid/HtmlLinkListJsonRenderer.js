@@ -14,10 +14,12 @@ function HtmlLinkListJsonRenderer(params) {
             returnString += ", ";
         }
         var item = jsonObj[i];
+        // See HtmlLinkJsonRenderer.js for htmlLinkEscapeHtml; DisplayText/Link are user-entered data.
+        var displayHtml = item.DisplayTextIsHtml ? item.DisplayText : htmlLinkEscapeHtml(item.DisplayText);
         if (item.Link && item.DisplayText) {
-            returnString += `<a href="${item.Link}">${item.DisplayText}</a>`;
+            returnString += `<a href="${htmlLinkEscapeHtml(item.Link)}">${displayHtml}</a>`;
         } else if (item.DisplayText) {
-            returnString += item.DisplayText;
+            returnString += displayHtml;
         }
     }
 

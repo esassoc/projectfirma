@@ -37,7 +37,7 @@ namespace ProjectFirma.Web.Views.FieldDefinition
             {
                 Add("Edit",
                     a =>
-                        UrlTemplate.MakeHrefString(SitkaRoute<FieldDefinitionController>.BuildUrlFromExpression(t => t.Edit(a)),
+                        UrlTemplate.MakeHrefStringWithHtmlLinkText(SitkaRoute<FieldDefinitionController>.BuildUrlFromExpression(t => t.Edit(a)),
                             AgGridHtmlHelpers.EditIconBootstrap.ToString(),
                             new Dictionary<string, string> {{"target", "_blank"}}),
                     30, AgGridColumnFilterType.None);
