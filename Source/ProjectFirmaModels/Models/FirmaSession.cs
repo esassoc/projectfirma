@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Web;
 using LtInfo.Common;
 using LtInfo.Common.DesignByContract;
 
@@ -150,19 +151,22 @@ namespace ProjectFirmaModels.Models
                     return;
                 }
 
-                currentImpersonationString = $" (currently impersonating {Person.GetFullNameFirstLast()})";
+                currentImpersonationString = $" (currently impersonating {HttpUtility.HtmlEncode(Person.GetFullNameFirstLast())})";
             }
 
             var lastPageLinkHtml = MakeLastPageLinkHtml(optionalPreviousPageUri);
 
             // Switch to the new user we want to impersonate
             Person = personToImpersonate;
-            impersonationStatusMessage = $"Logon {OriginalPerson.GetFullNameFirstLast()}{currentImpersonationString} switching to impersonate Logon {personToImpersonate.GetFullNameFirstLast()}.{lastPageLinkHtml}";
+            // These status messages are HTML by contract -- they carry lastPageLinkHtml -- and are rendered with
+            // Html.Raw out of TempData by SiteLayout / Home Index. So the person names interpolated into them must
+            // be encoded here, at the point they become HTML.
+            impersonationStatusMessage = $"Logon {HttpUtility.HtmlEncode(OriginalPerson.GetFullNameFirstLast())}{currentImpersonationString} switching to impersonate Logon {HttpUtility.HtmlEncode(personToImpersonate.GetFullNameFirstLast())}.{lastPageLinkHtml}";
             //_logger.InfoFormat(impersonationStatusMessage);
 
             if (!personToImpersonate.IsActive)
             {
-                impersonationStatusWarning = $"Logon {personToImpersonate.GetFullNameFirstLast()} is inactive. Impersonation will allow you to act as this person, but be aware of potential issues due to the account being inactive.";
+                impersonationStatusWarning = $"Logon {HttpUtility.HtmlEncode(personToImpersonate.GetFullNameFirstLast())} is inactive. Impersonation will allow you to act as this person, but be aware of potential issues due to the account being inactive.";
             }
         }
 
@@ -190,7 +194,8 @@ namespace ProjectFirmaModels.Models
 
         public static string BuildLastUrlLinkFromUrl(string url, string linkText, string titleText)
         {
-            return $"<a href=\"{url}\" title=\"{titleText}\">{linkText}</a>";
+            // url comes from Request.UrlReferrer and lands in a quoted attribute, so attribute-encode it.
+            return $"<a href=\"{HttpUtility.HtmlAttributeEncode(url)}\" title=\"{HttpUtility.HtmlAttributeEncode(titleText)}\">{HttpUtility.HtmlEncode(linkText)}</a>";
         }
 
         public void ResumeOriginalUser(Uri optionalPreviousPageUri, out string impersonationStatusMessage)
@@ -198,7 +203,7 @@ namespace ProjectFirmaModels.Models
             var lastPageLinkHtml = MakeLastPageLinkHtml(optionalPreviousPageUri);
 
             Check.EnsureNotNull(OriginalPerson, "FirmaSession {0} is not impersonating; it is not valid to call ResumeOriginalUser()");
-            impersonationStatusMessage = $"Logon {OriginalPerson.GetFullNameFirstLast()} resuming their original session; ceasing impersonation of Logon {Person.GetFullNameFirstLast()}.{lastPageLinkHtml}";
+            impersonationStatusMessage = $"Logon {HttpUtility.HtmlEncode(OriginalPerson.GetFullNameFirstLast())} resuming their original session; ceasing impersonation of Logon {HttpUtility.HtmlEncode(Person.GetFullNameFirstLast())}.{lastPageLinkHtml}";
             //_logger.InfoFormat(impersonationStatusMessage);
             // Swap back
             Person = OriginalPerson;
