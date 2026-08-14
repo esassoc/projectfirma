@@ -686,7 +686,8 @@ namespace ProjectFirma.Web.Controllers
             Person personToImpersonate = personIDToImpersonate.EntityObject;
             if (activeController.CurrentFirmaSession.Person.PersonID == personToImpersonate.PersonID)
             {
-                string currentPersonFullName = activeController.CurrentFirmaSession.Person.GetFullNameFirstLast();
+                // Rendered with Html.Raw out of TempData, so encode the user-entered name.
+                string currentPersonFullName = HttpUtility.HtmlEncode(activeController.CurrentFirmaSession.Person.GetFullNameFirstLast());
                 string impersonationWarning = $"Attempted to impersonate person {currentPersonFullName}, but you are already acting as {currentPersonFullName}. Nothing done.";
                 activeController.SetErrorForDisplay(impersonationWarning);
                 return;
