@@ -2618,6 +2618,7 @@
     <Compile Include="Views\Shared\SitkaRecaptcha.cs" />
     <Compile Include="Views\Shared\SitkaRecaptchaViewData.cs" />
     <Compile Include="Models\MapInitJson.cs" />
+    <Compile Include="Models\MapLayerGroupConfig.cs" />
     <Compile Include="Views\Organization\ProjectsIncludingLeadImplementingGridSpec.cs" />
     <Compile Include="Views\Shared\TextControls\EntityNotes.cs" />
     <Compile Include="Views\Shared\TextControls\EditRtfContent.cs" />

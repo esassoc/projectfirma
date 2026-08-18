@@ -58,6 +58,8 @@ CREATE TABLE [dbo].[TenantAttribute](
 	[AccomplishmentsDashboardVisibilityAdminOnly] [bit] NOT NULL,
 	[DisableProjectStewardOrganizationIndexPage] [bit] NULL,
 	[EnableDetailedLocationPolygonsOnProjectMap] [bit] NULL,
+	[ProjectDataMapLayerGroupName] [varchar](100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ReferenceMapLayerGroupName] [varchar](100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
  CONSTRAINT [PK_TenantAttribute_TenantAttributeID] PRIMARY KEY CLUSTERED
 (
 	[TenantAttributeID] ASC

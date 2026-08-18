@@ -31,7 +31,7 @@ namespace ProjectFirmaModels.Models
         /// <summary>
         /// Constructor for building a new object with MaximalConstructor required fields in preparation for insert into database
         /// </summary>
-        public TenantAttribute(int tenantAttributeID, DbGeometry defaultBoundingBox, int minimumYear, int? primaryContactPersonID, int? tenantSquareLogoFileResourceInfoID, int? tenantBannerLogoFileResourceInfoID, int? tenantStyleSheetFileResourceInfoID, string tenantShortDisplayName, string toolDisplayName, bool showProposalsToThePublic, int taxonomyLevelID, int associatePerfomanceMeasureTaxonomyLevelID, bool isActive, bool projectExternalDataSourceEnabled, int accomplishmentsDashboardFundingDisplayTypeID, string accomplishmentsDashboardAccomplishmentsButtonText, string accomplishmentsDashboardExpendituresButtonText, string accomplishmentsDashboardOrganizationsButtonText, bool accomplishmentsDashboardIncludeReportingOrganizationType, bool showLeadImplementerLogoOnFactSheet, bool enableAccomplishmentsDashboard, int? projectStewardshipAreaTypeID, bool enableSecondaryProjectTaxonomyLeaf, string keystoneOpenIDClientIdentifier, string keystoneOpenIDClientSecret, int budgetTypeID, bool canManageCustomAttributes, bool excludeTargetedFundingOrganizations, string googleAnalyticsTrackingCode, bool useProjectTimeline, string geoServerNamespace, bool enableEvaluations, bool enableProjectCategories, bool enableReports, int? tenantFactSheetLogoFileResourceInfoID, bool enableMatchmaker, bool matchmakerAlgorithmIncludesProjectGeospatialAreas, bool areGeospatialAreasExternallySourced, bool showPhotoCreditOnFactSheet, bool trackAccomplishments, bool showExpectedPerformanceMeasuresOnFactSheet, bool enableStatusUpdates, bool enableSolicitations, bool enableSimpleAccomplishmentsDashboard, bool setTargetsByGeospatialArea, bool reportFinancialsAtProjectLevel, string projectExternalDataSourceApiUrl, string projectExternalSourceOfRecordName, string projectExternalSourceOfRecordUrl, bool areReportsPublic, bool? projectStewardshipVisibilityAdminOnly, bool accomplishmentsDashboardVisibilityAdminOnly, bool? disableProjectStewardOrganizationIndexPage, bool? enableDetailedLocationPolygonsOnProjectMap) : this()
+        public TenantAttribute(int tenantAttributeID, DbGeometry defaultBoundingBox, int minimumYear, int? primaryContactPersonID, int? tenantSquareLogoFileResourceInfoID, int? tenantBannerLogoFileResourceInfoID, int? tenantStyleSheetFileResourceInfoID, string tenantShortDisplayName, string toolDisplayName, bool showProposalsToThePublic, int taxonomyLevelID, int associatePerfomanceMeasureTaxonomyLevelID, bool isActive, bool projectExternalDataSourceEnabled, int accomplishmentsDashboardFundingDisplayTypeID, string accomplishmentsDashboardAccomplishmentsButtonText, string accomplishmentsDashboardExpendituresButtonText, string accomplishmentsDashboardOrganizationsButtonText, bool accomplishmentsDashboardIncludeReportingOrganizationType, bool showLeadImplementerLogoOnFactSheet, bool enableAccomplishmentsDashboard, int? projectStewardshipAreaTypeID, bool enableSecondaryProjectTaxonomyLeaf, string keystoneOpenIDClientIdentifier, string keystoneOpenIDClientSecret, int budgetTypeID, bool canManageCustomAttributes, bool excludeTargetedFundingOrganizations, string googleAnalyticsTrackingCode, bool useProjectTimeline, string geoServerNamespace, bool enableEvaluations, bool enableProjectCategories, bool enableReports, int? tenantFactSheetLogoFileResourceInfoID, bool enableMatchmaker, bool matchmakerAlgorithmIncludesProjectGeospatialAreas, bool areGeospatialAreasExternallySourced, bool showPhotoCreditOnFactSheet, bool trackAccomplishments, bool showExpectedPerformanceMeasuresOnFactSheet, bool enableStatusUpdates, bool enableSolicitations, bool enableSimpleAccomplishmentsDashboard, bool setTargetsByGeospatialArea, bool reportFinancialsAtProjectLevel, string projectExternalDataSourceApiUrl, string projectExternalSourceOfRecordName, string projectExternalSourceOfRecordUrl, bool areReportsPublic, bool? projectStewardshipVisibilityAdminOnly, bool accomplishmentsDashboardVisibilityAdminOnly, bool? disableProjectStewardOrganizationIndexPage, bool? enableDetailedLocationPolygonsOnProjectMap, string projectDataMapLayerGroupName, string referenceMapLayerGroupName) : this()
         {
             this.TenantAttributeID = tenantAttributeID;
             this.DefaultBoundingBox = defaultBoundingBox;
@@ -87,6 +87,8 @@ namespace ProjectFirmaModels.Models
             this.AccomplishmentsDashboardVisibilityAdminOnly = accomplishmentsDashboardVisibilityAdminOnly;
             this.DisableProjectStewardOrganizationIndexPage = disableProjectStewardOrganizationIndexPage;
             this.EnableDetailedLocationPolygonsOnProjectMap = enableDetailedLocationPolygonsOnProjectMap;
+            this.ProjectDataMapLayerGroupName = projectDataMapLayerGroupName;
+            this.ReferenceMapLayerGroupName = referenceMapLayerGroupName;
         }
 
         /// <summary>
@@ -304,6 +306,8 @@ namespace ProjectFirmaModels.Models
         public bool AccomplishmentsDashboardVisibilityAdminOnly { get; set; }
         public bool? DisableProjectStewardOrganizationIndexPage { get; set; }
         public bool? EnableDetailedLocationPolygonsOnProjectMap { get; set; }
+        public string ProjectDataMapLayerGroupName { get; set; }
+        public string ReferenceMapLayerGroupName { get; set; }
         [NotMapped]
         public int PrimaryKey { get { return TenantAttributeID; } set { TenantAttributeID = value; } }
 
@@ -330,6 +334,8 @@ namespace ProjectFirmaModels.Models
             public const int ProjectExternalDataSourceApiUrl = 500;
             public const int ProjectExternalSourceOfRecordName = 256;
             public const int ProjectExternalSourceOfRecordUrl = 500;
+            public const int ProjectDataMapLayerGroupName = 100;
+            public const int ReferenceMapLayerGroupName = 100;
         }
     }
 }

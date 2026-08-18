@@ -35,6 +35,13 @@ ProjectFirmaMaps.Map = function (mapInitJson, initialBaseLayerShown)
     this.ProjectDetailedLocationsPublicApprovedGeoServerLayerName = mapInitJson.ProjectDetailedLocationsPublicApprovedGeoServerLayerName;
     this.ProjectFieldDefinitionLabel = mapInitJson.ProjectFieldDefinitionLabel;
     this.AutoDisplayProjectDetailedLocationsByZoom = mapInitJson.AutoDisplayProjectDetailedLocationsByZoom;
+    this.mapLayerGroupConfigsByLayerName = {};
+    if (!Sitka.Methods.isUndefinedNullOrEmpty(mapInitJson.MapLayerGroupConfigs)) {
+        for (var c = 0; c < mapInitJson.MapLayerGroupConfigs.length; ++c) {
+            var groupConfig = mapInitJson.MapLayerGroupConfigs[c];
+            this.mapLayerGroupConfigsByLayerName[groupConfig.LayerName] = groupConfig;
+        }
+    }
 
     firmaMap.mapLayers = [];
     firmaMap.externalFeatureLayers = mapInitJson.ExternalMapLayerSimples.filter(function(x) {
@@ -165,9 +172,146 @@ ProjectFirmaMaps.Map = function (mapInitJson, initialBaseLayerShown)
 }; // End of constructor
 
 // Utility functions
+//
+// Layer grouping: when the tenant has configured group names and sort orders for its map layers
+// (MapLayerGroupConfigs), the layer control is rendered with the grouped-layer-control plugin in the
+// configured order. With nothing configured -- which is every tenant that has not opted in -- the
+// control is built exactly as it always has been, from plain object insertion order.
+ProjectFirmaMaps.Map.prototype.hasConfiguredMapLayerGroups = function () {
+    for (var layerName in this.mapLayerGroupConfigsByLayerName) {
+        if (this.mapLayerGroupConfigsByLayerName.hasOwnProperty(layerName) &&
+            !Sitka.Methods.isUndefinedNullOrEmpty(this.mapLayerGroupConfigsByLayerName[layerName].MapLayerGroupName)) {
+            return true;
+        }
+    }
+    return false;
+};
+
+// The bundled leaflet.groupedlayercontrol has two defects. This repairs the first: removeLayer targets
+// this.layers, which does not exist -- the array is this._layers -- so it throws on any layer the control
+// actually knows about. The second, that onRemove unbinds the map's layeradd/layerremove handlers without
+// the context they were bound with, is avoided by never removing a grouped control from the map.
+// Patching is deferred to call time because the plugin loads after this file (MapJavascriptIncludes.cshtml).
+ProjectFirmaMaps.patchGroupedLayerControlRemoveLayer = function () {
+    if (L.Control.GroupedLayers == null || L.Control.GroupedLayers.prototype.removeLayerIsPatched) {
+        return;
+    }
+    L.Control.GroupedLayers.prototype.removeLayer = function (layer) {
+        var trackedLayer = this._getLayer(L.Util.stamp(layer));
+        if (trackedLayer != null) {
+            this._layers.splice(this._layers.indexOf(trackedLayer), 1);
+        }
+        this._update();
+        return this;
+    };
+    L.Control.GroupedLayers.prototype.removeLayerIsPatched = true;
+};
+
 ProjectFirmaMaps.Map.prototype.addLayersToMapLayersControl = function (baseLayers, overlayLayers) {
-    this.layerControl = L.control.layers(baseLayers, overlayLayers);
-    this.layerControl.addTo(this.map);
+    if (!this.hasConfiguredMapLayerGroups()) {
+        this.layerControl = L.control.layers(baseLayers, overlayLayers);
+        this.layerControl.addTo(this.map);
+        return;
+    }
+
+    ProjectFirmaMaps.patchGroupedLayerControlRemoveLayer();
+    var firmaMap = this;
+    this.overlayEntries = [];
+    for (var layerName in overlayLayers) {
+        if (overlayLayers.hasOwnProperty(layerName)) {
+            this.overlayEntries.push({ name: layerName, layer: overlayLayers[layerName] });
+        }
+    }
+
+    // The grouped control is created once here and never removed from the map. Its onRemove unbinds the
+    // map's layeradd/layerremove handlers without passing the context they were bound with, so Leaflet
+    // does not actually detach them; a removed control goes on firing _onLayerChange with a null _map and
+    // throws on the next layer toggle. Reordering therefore resyncs this one control in place.
+    var groupedLayerControl = L.control.groupedLayers(baseLayers, this.buildGroupedOverlays());
+    groupedLayerControl.nativeAddOverlay = groupedLayerControl.addOverlay;
+    groupedLayerControl.nativeRemoveLayer = groupedLayerControl.removeLayer;
+
+    // Keep the stock control's interface so existing addOverlay/removeLayer call sites work unchanged.
+    // Both resync rather than append, so a layer re-added after construction -- the Mapped Projects layer
+    // is removed and re-added on every filter, color and cluster change -- lands back in its configured
+    // group and position rather than at the end.
+    groupedLayerControl.addOverlay = function (layer, name) {
+        firmaMap.removeOverlayEntry(layer);
+        firmaMap.overlayEntries.push({ name: name, layer: layer });
+        firmaMap.resyncGroupedLayerControl();
+    };
+    groupedLayerControl.removeLayer = function (layer) {
+        firmaMap.removeOverlayEntry(layer);
+        firmaMap.resyncGroupedLayerControl();
+    };
+
+    groupedLayerControl.addTo(this.map);
+    this.layerControl = groupedLayerControl;
+};
+
+// Orders overlayEntries by configured SortOrder and buckets them by group name. Group headings appear in
+// the order their first layer does. Layers with no configured group fall into the plugin's unnamed bucket,
+// which renders without a heading, and sort last.
+ProjectFirmaMaps.Map.prototype.buildGroupedOverlays = function () {
+    var groupedOverlays = {};
+    var sortedEntries = this.getSortedOverlayEntries();
+    for (var i = 0; i < sortedEntries.length; ++i) {
+        var entry = sortedEntries[i];
+        if (groupedOverlays[entry.group] == null) {
+            groupedOverlays[entry.group] = {};
+        }
+        groupedOverlays[entry.group][entry.name] = entry.layer;
+    }
+    return groupedOverlays;
+};
+
+ProjectFirmaMaps.Map.prototype.getSortedOverlayEntries = function () {
+    var firmaMap = this;
+    var entries = this.overlayEntries.slice();
+    for (var i = 0; i < entries.length; ++i) {
+        var config = firmaMap.mapLayerGroupConfigsByLayerName[entries[i].name];
+        entries[i].group = config != null && !Sitka.Methods.isUndefinedNullOrEmpty(config.MapLayerGroupName) ? config.MapLayerGroupName : "";
+        entries[i].sortOrder = config != null && config.SortOrder != null ? config.SortOrder : Number.MAX_VALUE;
+        entries[i].originalIndex = i;
+    }
+    entries.sort(function (a, b) {
+        if (a.sortOrder !== b.sortOrder) {
+            return a.sortOrder - b.sortOrder;
+        }
+        return a.originalIndex - b.originalIndex;
+    });
+    return entries;
+};
+
+// Rewrites the existing control's overlay list in sorted order, leaving the control attached to the map.
+ProjectFirmaMaps.Map.prototype.resyncGroupedLayerControl = function () {
+    var control = this.layerControl;
+    if (control == null || control.nativeAddOverlay == null) {
+        return;
+    }
+
+    var existingOverlays = [];
+    for (var i = 0; i < control._layers.length; ++i) {
+        if (control._layers[i].overlay) {
+            existingOverlays.push(control._layers[i].layer);
+        }
+    }
+    for (var j = 0; j < existingOverlays.length; ++j) {
+        control.nativeRemoveLayer.call(control, existingOverlays[j]);
+    }
+
+    var sortedEntries = this.getSortedOverlayEntries();
+    for (var k = 0; k < sortedEntries.length; ++k) {
+        control.nativeAddOverlay.call(control, sortedEntries[k].layer, sortedEntries[k].name, sortedEntries[k].group);
+    }
+};
+
+ProjectFirmaMaps.Map.prototype.removeOverlayEntry = function (layer) {
+    for (var i = this.overlayEntries.length - 1; i >= 0; --i) {
+        if (this.overlayEntries[i].layer === layer) {
+            this.overlayEntries.splice(i, 1);
+        }
+    }
 };
 
 ProjectFirmaMaps.Map.prototype.setMapBounds = function (mapInitJson) {

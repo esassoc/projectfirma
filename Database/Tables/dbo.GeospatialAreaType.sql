@@ -15,6 +15,8 @@ CREATE TABLE [dbo].[GeospatialAreaType](
 	[OnByDefaultOnOtherMaps] [bit] NOT NULL,
 	[ServiceUrl] [varchar](1000) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[MapLegendImageFileResourceInfoID] [int] NULL,
+	[MapLayerGroupName] [varchar](100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[SortOrder] [int] NULL,
  CONSTRAINT [PK_GeospatialAreaType_GeospatialAreaTypeID] PRIMARY KEY CLUSTERED 
 (
 	[GeospatialAreaTypeID] ASC

@@ -215,7 +215,9 @@ Source code is available upon request via <support@sitkatech.com>.
 
     ProjectFirmaMaps.Map.prototype.addLocationLayers = function()
     {
-        this.projectLocationsLayer = this.addProjectLocationsToMap(this.projectLocations, this.projectLocationsLayer, "Mapped @(FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized())", true);
+        // Layer name comes from MapInitJson so it stays in sync with the map layer group configuration,
+        // which is keyed by layer name.
+        this.projectLocationsLayer = this.addProjectLocationsToMap(this.projectLocations, this.projectLocationsLayer, "@MapInitJson.GetMappedProjectsLayerName()", true);
     }
 
     ProjectFirmaMaps.Map.prototype.addProjectLocationsToMap = function(points, layer, layerName, showByDefault)

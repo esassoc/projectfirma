@@ -35,7 +35,7 @@ namespace ProjectFirmaModels.Models
         /// <summary>
         /// Constructor for building a new object with MaximalConstructor required fields in preparation for insert into database
         /// </summary>
-        public GeospatialAreaType(int geospatialAreaTypeID, string geospatialAreaTypeName, string geospatialAreaTypeNamePluralized, string geospatialAreaIntroContent, string geospatialAreaTypeDefinition, string geospatialAreaLayerName, bool displayOnAllProjectMaps, bool onByDefaultOnProjectMap, bool onByDefaultOnOtherMaps, string serviceUrl, int? mapLegendImageFileResourceInfoID) : this()
+        public GeospatialAreaType(int geospatialAreaTypeID, string geospatialAreaTypeName, string geospatialAreaTypeNamePluralized, string geospatialAreaIntroContent, string geospatialAreaTypeDefinition, string geospatialAreaLayerName, bool displayOnAllProjectMaps, bool onByDefaultOnProjectMap, bool onByDefaultOnOtherMaps, string serviceUrl, int? mapLegendImageFileResourceInfoID, string mapLayerGroupName, int? sortOrder) : this()
         {
             this.GeospatialAreaTypeID = geospatialAreaTypeID;
             this.GeospatialAreaTypeName = geospatialAreaTypeName;
@@ -48,6 +48,8 @@ namespace ProjectFirmaModels.Models
             this.OnByDefaultOnOtherMaps = onByDefaultOnOtherMaps;
             this.ServiceUrl = serviceUrl;
             this.MapLegendImageFileResourceInfoID = mapLegendImageFileResourceInfoID;
+            this.MapLayerGroupName = mapLayerGroupName;
+            this.SortOrder = sortOrder;
         }
 
         /// <summary>
@@ -197,6 +199,8 @@ namespace ProjectFirmaModels.Models
         public bool OnByDefaultOnOtherMaps { get; set; }
         public string ServiceUrl { get; set; }
         public int? MapLegendImageFileResourceInfoID { get; set; }
+        public string MapLayerGroupName { get; set; }
+        public int? SortOrder { get; set; }
         [NotMapped]
         public int PrimaryKey { get { return GeospatialAreaTypeID; } set { GeospatialAreaTypeID = value; } }
 
@@ -214,6 +218,7 @@ namespace ProjectFirmaModels.Models
             public const int GeospatialAreaTypeNamePluralized = 200;
             public const int GeospatialAreaLayerName = 255;
             public const int ServiceUrl = 1000;
+            public const int MapLayerGroupName = 100;
         }
     }
 }

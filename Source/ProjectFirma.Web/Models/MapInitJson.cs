@@ -44,6 +44,18 @@ namespace ProjectFirma.Web.Models
         public string ProjectDetailedLocationsPublicApprovedGeoServerLayerName;
         public string ProjectFieldDefinitionLabel;
         public bool AutoDisplayProjectDetailedLocationsByZoom;
+        public List<MapLayerGroupConfig> MapLayerGroupConfigs;
+
+        /// <summary>
+        /// Name the hardcoded street labels overlay is registered under in ProjectFirmaMaps.js.
+        /// </summary>
+        public const string StreetLabelsLayerName = "Street Labels";
+
+        // Sort orders for the three layers that are not backed by a database row. They lead their groups,
+        // ahead of the row-backed layers, whose SortOrder values start after these.
+        private const int MappedProjectsSortOrder = 1;
+        private const int ProjectDetailedLocationsSortOrder = 2;
+        private const int StreetLabelsSortOrder = 3;
 
         public MapInitJson(string mapDivID, int zoomLevel, List<LayerGeoJson> layers, List<ExternalMapLayerSimple> externalMapLayers, BoundingBox boundingBox, bool turnOnFeatureIdentify)
         {
@@ -58,6 +70,51 @@ namespace ProjectFirma.Web.Models
             ProjectDetailedLocationsPublicApprovedGeoServerLayerName =
                 $"{MultiTenantHelpers.GetTenantAttributeFromCache().GeoServerNamespace}:ProjectDetailedLocationsPublicApproved";
             ProjectFieldDefinitionLabel = FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabel();
+            MapLayerGroupConfigs = BuildMapLayerGroupConfigs(layers, externalMapLayers);
+        }
+
+        /// <summary>
+        /// Where each layer sits in the layer control, for tenants that have configured grouping. Returns
+        /// an empty list when nothing is configured, which keeps the map on the ungrouped layer control.
+        /// </summary>
+        private static List<MapLayerGroupConfig> BuildMapLayerGroupConfigs(List<LayerGeoJson> layers, List<ExternalMapLayerSimple> externalMapLayers)
+        {
+            var tenantAttribute = MultiTenantHelpers.GetTenantAttributeFromCache();
+            var mapLayerGroupConfigs = new List<MapLayerGroupConfig>();
+
+            if (!string.IsNullOrWhiteSpace(tenantAttribute.ProjectDataMapLayerGroupName))
+            {
+                mapLayerGroupConfigs.Add(new MapLayerGroupConfig(GetMappedProjectsLayerName(), tenantAttribute.ProjectDataMapLayerGroupName, MappedProjectsSortOrder));
+                mapLayerGroupConfigs.Add(new MapLayerGroupConfig(GetProjectDetailedLocationsLayer().LayerName, tenantAttribute.ProjectDataMapLayerGroupName, ProjectDetailedLocationsSortOrder));
+            }
+
+            if (!string.IsNullOrWhiteSpace(tenantAttribute.ReferenceMapLayerGroupName))
+            {
+                mapLayerGroupConfigs.Add(new MapLayerGroupConfig(StreetLabelsLayerName, tenantAttribute.ReferenceMapLayerGroupName, StreetLabelsSortOrder));
+            }
+
+            if (layers != null)
+            {
+                mapLayerGroupConfigs.AddRange(layers.Where(x => !string.IsNullOrWhiteSpace(x.MapLayerGroupName))
+                    .Select(x => new MapLayerGroupConfig(x.LayerName, x.MapLayerGroupName, x.SortOrder)));
+            }
+
+            if (externalMapLayers != null)
+            {
+                mapLayerGroupConfigs.AddRange(externalMapLayers.Where(x => !string.IsNullOrWhiteSpace(x.MapLayerGroupName))
+                    .Select(x => new MapLayerGroupConfig(x.DisplayName, x.MapLayerGroupName, x.SortOrder)));
+            }
+
+            return mapLayerGroupConfigs;
+        }
+
+        /// <summary>
+        /// Must match the name the project locations layer is added to the control under in
+        /// ProjectLocationsMap.cshtml.
+        /// </summary>
+        public static string GetMappedProjectsLayerName()
+        {
+            return $"Mapped {FieldDefinitionEnum.Project.ToType().GetFieldDefinitionLabelPluralized()}";
         }
 
         /// <summary>

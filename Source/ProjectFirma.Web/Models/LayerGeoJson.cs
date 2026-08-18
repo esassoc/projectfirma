@@ -47,6 +47,13 @@ namespace ProjectFirmaModels.Models
         public bool HasCustomPopups { get; }
 
         /// <summary>
+        /// Placement of this layer in the map layer control, for tenants that have configured layer
+        /// grouping. Null for everyone else. Set after construction by whatever knows the source row.
+        /// </summary>
+        public string MapLayerGroupName { get; set; }
+        public int? SortOrder { get; set; }
+
+        /// <summary>
         /// Constructor for LayerGeoJson with Vector Type
         /// </summary>
         public LayerGeoJson(string layerName, FeatureCollection geoJsonFeatureCollection, string layerColor, decimal layerOpacity, LayerInitialVisibility.LayerInitialVisibilityEnum layerInitialVisibility)
