@@ -24,6 +24,26 @@ var highlightOverlay; //Used when highlighting all a Project's Detailed Location
 var mapOutsideScope; //Used when highlighting all a Project's Detailed Locations; see formatGeospatialAreaResponse
 var projectDetailedLocationsLayer;
 
+//Original Detailed Location highlight; still used by tenants that do not display detailed location polygons
+ProjectFirmaMaps.DefaultDetailedLocationHighlightStyle = { "color": "#2dc3a1", "weight": 2, "opacity": 0.5 };
+
+//PF-2830: highlight style for tenants displaying detailed location polygons (PF-2829). Each polygon keeps
+//its own stage color as the fill, at a lower transparency than the unhighlighted layer, and is outlined in
+//the ArcGIS default selection cyan at full opacity so the selected footprint reads clearly at any zoom.
+ProjectFirmaMaps.DetailedLocationHighlightBorderColor = "#75fcfd";
+ProjectFirmaMaps.detailedLocationHighlightStyle = function (feature) {
+    var projectStageColor = feature.properties.ProjectStageColor;
+    return {
+        "color": ProjectFirmaMaps.DetailedLocationHighlightBorderColor,
+        "weight": 3,
+        "opacity": 1,
+        "fillColor": Sitka.Methods.isUndefinedNullOrEmpty(projectStageColor)
+            ? ProjectFirmaMaps.DefaultDetailedLocationHighlightStyle.color
+            : projectStageColor,
+        "fillOpacity": 0.6
+    };
+};
+
 
 /* ====== Main Map ====== */
 ProjectFirmaMaps.Map = function (mapInitJson, initialBaseLayerShown)
@@ -736,6 +756,11 @@ ProjectFirmaMaps.Map.prototype.highlightProjectDetailedLocations = function (pro
     if (highlightOverlay) {
         highlightOverlay.remove();
     }
+    //Tenants displaying detailed location polygons (PF-2829) get the stage-colored highlight; everyone else
+    //keeps the original one, since without those polygons on the map there is nothing to stay consistent with
+    var highlightStyle = this.AutoDisplayProjectDetailedLocationsByZoom
+        ? ProjectFirmaMaps.detailedLocationHighlightStyle
+        : ProjectFirmaMaps.DefaultDetailedLocationHighlightStyle;
     var projectLocationDetailedWfsParams = {
         service: "WFS",
         version: "2.0",
@@ -754,11 +779,6 @@ ProjectFirmaMaps.Map.prototype.highlightProjectDetailedLocations = function (pro
     }).done(function (data) {
         if (data.features.length > 0) {
             //Highlight feature(s) with new layer
-            var highlightStyle = {
-                "color": "#2dc3a1",
-                "weight": 2,
-                "opacity": 0.5
-            };
             highlightOverlay = L.geoJSON(data, { style: highlightStyle });
             highlightOverlay.addTo(mapOutsideScope);
         }
