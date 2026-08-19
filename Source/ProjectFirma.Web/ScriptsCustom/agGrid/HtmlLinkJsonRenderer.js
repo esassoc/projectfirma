@@ -22,6 +22,10 @@ function HtmlLinkJsonRenderer(params) {
         ? jsonObj.DisplayText
         : htmlLinkEscapeHtml(jsonObj.DisplayText);
 
+    // Decoration (e.g. a map legend color swatch) the server built and kept out of DisplayText so that sorting,
+    // filtering and export see only the plain text. Trusted markup by contract; see HtmlLinkObject.WithHtmlPrefix.
+    var prefixHtml = jsonObj.DisplayHtmlPrefix || "";
+
     if (jsonObj.Link && jsonObj.DisplayText) {
         // Derive a plain-text aria-label from the DisplayText (strip any HTML such as leading <span>)
         var tmp = document.createElement('div');
@@ -30,9 +34,9 @@ function HtmlLinkJsonRenderer(params) {
 
         var ariaLabelValue = htmlLinkEscapeHtml(ariaText);
 
-        return `<a href="${htmlLinkEscapeHtml(jsonObj.Link)}" tabindex="0" aria-label="${ariaLabelValue}" class="ag-grid-link">${displayHtml}</a>`;
+        return `<a href="${htmlLinkEscapeHtml(jsonObj.Link)}" tabindex="0" aria-label="${ariaLabelValue}" class="ag-grid-link">${prefixHtml}${displayHtml}</a>`;
     } else if (jsonObj.DisplayText) {
-        return displayHtml;
+        return prefixHtml + displayHtml;
     }
     return "";
 }

@@ -1,4 +1,7 @@
-﻿namespace ProjectFirma.Web.Models
+﻿using System.Web;
+using LtInfo.Common.AgGridWrappers;
+
+namespace ProjectFirma.Web.Models
 {
     public class GeospatialAreaIndexGridSimple
     {
@@ -18,9 +21,19 @@
             LayerColor = layerColor;
         }
 
-        public string GetGeospatialAreaShortNameWithColor()
+        /// <summary>
+        /// Returns trusted HTML for the map legend color swatch shown ahead of the short name in the grid, or null when
+        /// this area has no layer color. This is passed to ag-grid as <see cref="HtmlLinkObject.WithHtmlPrefix"/>, which
+        /// emits it as markup, so the layer color is attribute encoded here.
+        /// </summary>
+        public string GetLayerColorSwatchHtml()
         {
-            return string.IsNullOrWhiteSpace(LayerColor) ? GeospatialAreaShortName : $"<span style=\"vertical-align:middle; width:10px; height:10px; margin-right:5px; display:inline-block; background:{LayerColor};\"></span>{GeospatialAreaShortName}";
+            if (string.IsNullOrWhiteSpace(LayerColor))
+            {
+                return null;
+            }
+            var encodedLayerColor = HttpUtility.HtmlAttributeEncode(LayerColor);
+            return $"<span style=\"vertical-align:middle; width:10px; height:10px; margin-right:5px; display:inline-block; background:{encodedLayerColor};\"></span>";
         }
     }
 }

@@ -38,6 +38,14 @@ namespace LtInfo.Common.AgGridWrappers
         /// </summary>
         public bool DisplayTextIsHtml { get; set; }
 
+        /// <summary>
+        /// Optional trusted markup the ag-grid renderers put immediately before <see cref="DisplayText"/> in the cell,
+        /// for decoration such as a map legend color swatch. It is deliberately kept out of <see cref="DisplayText"/>
+        /// so sorting, filtering and CSV export still see only the plain text. Set this only via
+        /// <see cref="WithHtmlPrefix"/>; any user-entered data embedded in it must already be HTML encoded.
+        /// </summary>
+        public string DisplayHtmlPrefix { get; set; }
+
         public HtmlLinkObject(string displayText, string link)
         {
             DisplayText = displayText;
@@ -52,6 +60,17 @@ namespace LtInfo.Common.AgGridWrappers
         public static HtmlLinkObject WithHtmlDisplayText(string displayTextHtml, string link)
         {
             return new HtmlLinkObject(displayTextHtml, link) { DisplayTextIsHtml = true };
+        }
+
+        /// <summary>
+        /// For links that need decorative markup (a color swatch, an icon) ahead of otherwise plain display text.
+        /// <paramref name="displayText"/> stays plain so it drives sorting, filtering and export; only
+        /// <paramref name="displayHtmlPrefix"/> is emitted as markup, and any user-entered data inside it must
+        /// already be HTML encoded by the caller.
+        /// </summary>
+        public static HtmlLinkObject WithHtmlPrefix(string displayHtmlPrefix, string displayText, string link)
+        {
+            return new HtmlLinkObject(displayText, link) { DisplayHtmlPrefix = displayHtmlPrefix };
         }
     }
 
