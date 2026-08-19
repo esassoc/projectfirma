@@ -63,6 +63,7 @@
     <Compile Include="Common\IFieldDefinitionDisplayAttribute.cs" />
     <Compile Include="Common\KeystoneService.cs" />
     <Compile Include="Common\LabelForExtensions.cs" />
+    <Compile Include="Common\MapLayerLegendHelpers.cs" />
     <Compile Include="Common\LabelForExtensionsTest.cs" />
     <Compile Include="Common\MultiTenantHelpers.cs" />
     <Compile Include="Common\MultiTenantHelpersTest.cs" />

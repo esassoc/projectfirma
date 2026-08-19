@@ -50,3 +50,60 @@ Source code is available upon request via <support@sitkatech.com>.
     }
     //]]>
 </script>
+
+@* PF-2837: the WUI Zone map legend, opened from the question mark icon in the layer control. Showing and
+   hiding is pure CSS, so it needs nothing beyond the markup MapLayerLegendHelpers puts in the layer name, and
+   it closes on its own when the pointer leaves the control and Leaflet collapses it. *@
+<style type="text/css">
+    .map-layer-legend-wrapper { position: relative; }
+
+    /* Color, cursor and spacing come from the theme's .helpicon, the same as the field definition help icon,
+       so this only strips the button chrome. A little smaller than that icon's 18px to sit better against the
+       layer labels around it. Scoped to the layer control to outweigh .helpicon's own font-size regardless of
+       stylesheet order. */
+    .leaflet-control-layers .map-layer-legend-icon {
+        padding: 0;
+        background-color: transparent;
+        border: none;
+        font-size: 16px;
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .map-layer-legend {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: -5px;
+        margin-left: 8px;
+        z-index: 1200;
+        padding: 5px 7px;
+        background-color: #F5F5F5;
+        border: 1px solid #84AFD3;
+        border-radius: 3px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        font-size: 11px;
+        line-height: 15px;
+        font-weight: normal;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    /* Kept open while the pointer is on the legend itself so it can be read without it vanishing. */
+    .map-layer-legend-icon:hover + .map-layer-legend,
+    .map-layer-legend-icon:focus + .map-layer-legend,
+    .map-layer-legend:hover {
+        display: block;
+    }
+
+    .map-layer-legend-row { display: block; }
+
+    .map-layer-legend-swatch {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 5px;
+        vertical-align: middle;
+        border: 1px solid #999999;
+    }
+</style>
