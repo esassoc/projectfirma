@@ -26,7 +26,7 @@ namespace ProjectFirmaModels.Models
         /// <summary>
         /// Constructor for building a new object with MaximalConstructor required fields in preparation for insert into database
         /// </summary>
-        public vGeoServerTcsiProjectSimpleLocations(int projectID, int primaryKey, string projectName, int tenantID, string tenantName, string projectDescription, string projectStage, string taxonomyLeaf, string primaryContactOrganization, string primaryContactPerson, int? planningDesignStartYear, int? implementationStartYear, int? completionYear, decimal? securedFunding, decimal? targetedFunding, decimal? estimatedTotalCost, DateTime projectLastUpdated, double? biomassRemovalReportedAcres, double? biomassRemovalExpectedAcres, double? broadcastBurningReportedAcres, double? broadcastBurningExpectedAcres, double? chemicalTreatmentReportedAcres, double? chemicalTreatmentExpectedAcres, double? chippingReportedAcres, double? chippingExpectedAcres, double? culturalBurningReportedAcres, double? culturalBurningExpectedAcres, double? handPilingReportedAcres, double? handPilingExpectedAcres, double? handThinningReportedAcres, double? handThinningExpectedAcres, double? helicopterYardingReportedAcres, double? helicopterYardingExpectedAcres, double? jackpotBurningReportedAcres, double? jackpotBurningExpectedAcres, double? machinePilingReportedAcres, double? machinePilingExpectedAcres, double? masticationReportedAcres, double? masticationExpectedAcres, double? mechanicalThinningReportedAcres, double? mechanicalThinningExpectedAcres, double? pileBurningReportedAcres, double? pileBurningExpectedAcres, double? prescribedBurningReportedAcres, double? prescribedBurningExpectedAcres, double? prescribedTargetedGrazingReportedAcres, double? prescribedTargetedGrazingExpectedAcres, double? pruningReportedAcres, double? pruningExpectedAcres, double? salvageCutReportedAcres, double? salvageCutExpectedAcres, double? unspecifiedTreatmentTypeReportedAcres, double? unspecifiedTreatmentTypeExpectedAcres) : this()
+        public vGeoServerTcsiProjectSimpleLocations(int projectID, int primaryKey, string projectName, int tenantID, string tenantName, string projectDescription, string projectStage, string taxonomyLeaf, string primaryContactOrganization, string primaryContactPerson, int? planningDesignStartYear, int? implementationStartYear, int? completionYear, decimal? securedFunding, decimal? targetedFunding, decimal? estimatedTotalCost, decimal? gisAcres, string source, DateTime projectLastUpdated, double? biomassRemovalReportedAcres, double? biomassRemovalExpectedAcres, double? broadcastBurningReportedAcres, double? broadcastBurningExpectedAcres, double? chemicalTreatmentReportedAcres, double? chemicalTreatmentExpectedAcres, double? chippingReportedAcres, double? chippingExpectedAcres, double? culturalBurningReportedAcres, double? culturalBurningExpectedAcres, double? handPilingReportedAcres, double? handPilingExpectedAcres, double? handThinningReportedAcres, double? handThinningExpectedAcres, double? helicopterYardingReportedAcres, double? helicopterYardingExpectedAcres, double? jackpotBurningReportedAcres, double? jackpotBurningExpectedAcres, double? machinePilingReportedAcres, double? machinePilingExpectedAcres, double? masticationReportedAcres, double? masticationExpectedAcres, double? mechanicalThinningReportedAcres, double? mechanicalThinningExpectedAcres, double? pileBurningReportedAcres, double? pileBurningExpectedAcres, double? prescribedBurningReportedAcres, double? prescribedBurningExpectedAcres, double? prescribedTargetedGrazingReportedAcres, double? prescribedTargetedGrazingExpectedAcres, double? pruningReportedAcres, double? pruningExpectedAcres, double? salvageCutReportedAcres, double? salvageCutExpectedAcres, double? unspecifiedTreatmentTypeReportedAcres, double? unspecifiedTreatmentTypeExpectedAcres) : this()
         {
             this.ProjectID = projectID;
             this.PrimaryKey = primaryKey;
@@ -44,6 +44,8 @@ namespace ProjectFirmaModels.Models
             this.SecuredFunding = securedFunding;
             this.TargetedFunding = targetedFunding;
             this.EstimatedTotalCost = estimatedTotalCost;
+            this.GisAcres = gisAcres;
+            this.Source = source;
             this.ProjectLastUpdated = projectLastUpdated;
             this.BiomassRemovalReportedAcres = biomassRemovalReportedAcres;
             this.BiomassRemovalExpectedAcres = biomassRemovalExpectedAcres;
@@ -104,6 +106,8 @@ namespace ProjectFirmaModels.Models
             this.SecuredFunding = vGeoServerTcsiProjectSimpleLocations.SecuredFunding;
             this.TargetedFunding = vGeoServerTcsiProjectSimpleLocations.TargetedFunding;
             this.EstimatedTotalCost = vGeoServerTcsiProjectSimpleLocations.EstimatedTotalCost;
+            this.GisAcres = vGeoServerTcsiProjectSimpleLocations.GisAcres;
+            this.Source = vGeoServerTcsiProjectSimpleLocations.Source;
             this.ProjectLastUpdated = vGeoServerTcsiProjectSimpleLocations.ProjectLastUpdated;
             this.BiomassRemovalReportedAcres = vGeoServerTcsiProjectSimpleLocations.BiomassRemovalReportedAcres;
             this.BiomassRemovalExpectedAcres = vGeoServerTcsiProjectSimpleLocations.BiomassRemovalExpectedAcres;
@@ -162,6 +166,8 @@ namespace ProjectFirmaModels.Models
         public decimal? SecuredFunding { get; set; }
         public decimal? TargetedFunding { get; set; }
         public decimal? EstimatedTotalCost { get; set; }
+        public decimal? GisAcres { get; set; }
+        public string Source { get; set; }
         public DateTime ProjectLastUpdated { get; set; }
         public double? BiomassRemovalReportedAcres { get; set; }
         public double? BiomassRemovalExpectedAcres { get; set; }

@@ -26,7 +26,7 @@ namespace ProjectFirmaModels.Models
         /// <summary>
         /// Constructor for building a new object with MaximalConstructor required fields in preparation for insert into database
         /// </summary>
-        public vGeoServerProjectAttributes(int projectID, int primaryKey, string projectDescription, string projectStage, string taxonomyLeaf, string primaryContactOrganization, string primaryContactPerson, int? planningDesignStartYear, int? implementationStartYear, int? completionYear, decimal? securedFunding, decimal? targetedFunding, decimal? estimatedTotalCost, DateTime projectLastUpdated) : this()
+        public vGeoServerProjectAttributes(int projectID, int primaryKey, string projectDescription, string projectStage, string taxonomyLeaf, string primaryContactOrganization, string primaryContactPerson, int? planningDesignStartYear, int? implementationStartYear, int? completionYear, decimal? securedFunding, decimal? targetedFunding, decimal? estimatedTotalCost, decimal? gisAcres, DateTime projectLastUpdated) : this()
         {
             this.ProjectID = projectID;
             this.PrimaryKey = primaryKey;
@@ -41,6 +41,7 @@ namespace ProjectFirmaModels.Models
             this.SecuredFunding = securedFunding;
             this.TargetedFunding = targetedFunding;
             this.EstimatedTotalCost = estimatedTotalCost;
+            this.GisAcres = gisAcres;
             this.ProjectLastUpdated = projectLastUpdated;
         }
 
@@ -62,6 +63,7 @@ namespace ProjectFirmaModels.Models
             this.SecuredFunding = vGeoServerProjectAttributes.SecuredFunding;
             this.TargetedFunding = vGeoServerProjectAttributes.TargetedFunding;
             this.EstimatedTotalCost = vGeoServerProjectAttributes.EstimatedTotalCost;
+            this.GisAcres = vGeoServerProjectAttributes.GisAcres;
             this.ProjectLastUpdated = vGeoServerProjectAttributes.ProjectLastUpdated;
             CallAfterConstructor(vGeoServerProjectAttributes);
         }
@@ -81,6 +83,7 @@ namespace ProjectFirmaModels.Models
         public decimal? SecuredFunding { get; set; }
         public decimal? TargetedFunding { get; set; }
         public decimal? EstimatedTotalCost { get; set; }
+        public decimal? GisAcres { get; set; }
         public DateTime ProjectLastUpdated { get; set; }
     }
 }

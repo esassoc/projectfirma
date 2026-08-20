@@ -24,6 +24,7 @@ select
     coalesce(pfsb.SecuredFunding, 0) as SecuredFunding,
     coalesce(pfsb.TargetedFunding, 0) as TargetedFunding,
     coalesce(pfsb.SecuredFunding, 0) + coalesce(pfsb.TargetedFunding, 0) + coalesce(pnfsi.NoFundingSourceIdentified, 0) as EstimatedTotalCost,
+    p.GisAcres,
     p.LastUpdatedDate as ProjectLastUpdated
 
 from dbo.Project p

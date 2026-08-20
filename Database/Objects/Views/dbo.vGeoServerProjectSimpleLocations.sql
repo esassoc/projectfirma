@@ -23,6 +23,7 @@ select
     pa.SecuredFunding,
     pa.TargetedFunding,
     pa.EstimatedTotalCost,
+    pa.GisAcres,
     pa.ProjectLastUpdated
 from
 	dbo.Project p

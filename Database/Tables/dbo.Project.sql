@@ -54,6 +54,7 @@ CREATE TABLE [dbo].[Project](
 	[ExternalID] [int] NULL,
 	[PrimaryContactPersonFullName] [varchar](201) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[PrimaryContactPersonEmail] [varchar](255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[GisAcres] [decimal](18, 2) NULL,
  CONSTRAINT [PK_Project_ProjectID] PRIMARY KEY CLUSTERED 
 (
 	[ProjectID] ASC

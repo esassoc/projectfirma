@@ -30,6 +30,14 @@ select
     sl.SecuredFunding,
     sl.TargetedFunding,
     sl.EstimatedTotalCost,
+    sl.GisAcres,
+    -- Source (PF-2838): TCSI-only. Projects loaded through the external data-integration sync carry an
+    -- ExternalID; everything else was created by a user in the tracker. The tenant's configured
+    -- source-of-record name labels the value so it is self-describing ('EIP Project Tracker' for TCSI).
+    case when p.ExternalID is not null
+         then coalesce(nullif(ta.ProjectExternalSourceOfRecordName, ''), 'External data integration')
+         else 'User-added'
+    end as Source,
     sl.ProjectLastUpdated,
     ff.BiomassRemovalReportedAcres,
     ff.BiomassRemovalExpectedAcres,
@@ -70,4 +78,6 @@ select
 
 from dbo.vGeoServerProjectSimpleLocations sl
 left join dbo.vGeoServerTcsiForestFuelsTreatmentAcres ff on sl.ProjectID = ff.ProjectID
+join dbo.Project p on sl.ProjectID = p.ProjectID
+left join dbo.TenantAttribute ta on sl.TenantID = ta.TenantID
 where sl.TenantName = 'TCSProjectTracker'
