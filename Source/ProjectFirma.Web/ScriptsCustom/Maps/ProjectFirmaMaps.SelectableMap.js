@@ -22,7 +22,12 @@ ProjectFirmaMaps.Map.prototype.addLayersToMapLayersControl = function (baseLayer
     var groupedLayerControlOptions = {
         exclusiveGroups: ["Feature Groups"]
     };
-    L.control.groupedLayers(baseLayers, groupedOverlays, groupedLayerControlOptions).addTo(this.map);
+    // Assign layerControl: callers such as EditProjectGeospatialAreasController and
+    // BulkSetProjectSpatialInformationController add and remove their selected-area layers through it.
+    // Those removeLayer calls need the plugin's broken removeLayer repaired first.
+    ProjectFirmaMaps.patchGroupedLayerControlRemoveLayer();
+    this.layerControl = L.control.groupedLayers(baseLayers, groupedOverlays, groupedLayerControlOptions);
+    this.layerControl.addTo(this.map);
 };
 
 ProjectFirmaMaps.SelectableMap.prototype.onSelectLayer = function () {

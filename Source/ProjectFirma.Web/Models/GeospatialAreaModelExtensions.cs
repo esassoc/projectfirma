@@ -91,12 +91,15 @@ namespace ProjectFirma.Web.Models
             string layerColor, decimal layerOpacity,
             LayerInitialVisibility.LayerInitialVisibilityEnum layerInitialVisibility)
         {
-            var layerName = geospatialAreaType.MapLegendImageFileResourceInfoID.HasValue ? $"<span>{geospatialAreaType.GeospatialAreaTypeNamePluralized} <img src='{geospatialAreaType.MapLegendImageFileResourceInfo.GetFileResourceUrl()}' height='20px' /></span>" : geospatialAreaType.GeospatialAreaTypeNamePluralized;
-            return new LayerGeoJson(layerName,
+            var layerName = MapLayerLegendHelpers.GetGeospatialAreaLayerControlLabel(geospatialAreaType);
+            var layerGeoJson = new LayerGeoJson(layerName,
                 MultiTenantHelpers.MapServiceUrl(),
                 geospatialAreaType.GeospatialAreaLayerName, MapTooltipUrlTemplate.UrlTemplateString, layerColor,
                 layerOpacity,
                 layerInitialVisibility);
+            layerGeoJson.MapLayerGroupName = geospatialAreaType.MapLayerGroupName;
+            layerGeoJson.SortOrder = geospatialAreaType.SortOrder;
+            return layerGeoJson;
         }
 
         public static List<LayerGeoJson> GetGeospatialAreaAndAssociatedProjectLayers(this GeospatialArea geospatialArea, FirmaSession currentFirmaSession,

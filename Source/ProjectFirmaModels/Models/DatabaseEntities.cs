@@ -72,7 +72,12 @@ namespace ProjectFirmaModels.Models
             ChangeTracker.DetectChanges();
             var dbEntityEntries = ChangeTracker.Entries().ToList();
             SetTenantIDForAllModifiedEntries(dbEntityEntries, tenantId);
-            return base.SaveChanges();
+            // PF-2838: capture the changed ProjectLocations before saving. ProjectID on a newly added
+            // ProjectLocation is not populated until the save itself, so this has to be read afterwards.
+            var changedProjectLocations = GetChangedProjectLocations(dbEntityEntries);
+            var changes = base.SaveChanges();
+            RecomputeGisAcres(changedProjectLocations);
+            return changes;
         }
 
         private int SaveChangesImpl(Person person, Tenant tenant, TransactionScope scope)
@@ -87,6 +92,9 @@ namespace ProjectFirmaModels.Models
             var tenantID = tenant.TenantID;
 
             SetTenantIDForAllModifiedEntries(dbEntityEntries, tenantID);
+
+            // PF-2838: see GetChangedProjectLocations. Captured here, applied after the save below.
+            var changedProjectLocations = GetChangedProjectLocations(dbEntityEntries);
 
             // Project is such an important piece to PF; if we generate an audit log record that has a ProjectID, we need to update the last update date on the Project
             var distinctProjectIDsModified = new HashSet<int>();
@@ -147,6 +155,8 @@ namespace ProjectFirmaModels.Models
             // we need to save the audit log entries now
             base.SaveChanges();
 
+            RecomputeGisAcres(changedProjectLocations);
+
             scope.Complete();
             return changes;
         }
@@ -155,6 +165,56 @@ namespace ProjectFirmaModels.Models
         {
             var auditLogsWithProjectID = auditRecordsForChange.Where(x => x.ProjectID.HasValue).ToList();
             return auditLogsWithProjectID.Any() ? auditLogsWithProjectID.Select(x => x.ProjectID.Value).Distinct().ToList() : new List<int>();
+        }
+
+        /// <summary>
+        /// PF-2838: every ProjectLocation write path in the app is delete-all-then-reinsert, and
+        /// DbSpatialHelper.Reduce rewrites geometry on already-inserted rows after the fact, so the
+        /// ChangeTracker is the only reliable place to notice that a project's geometry changed.
+        /// Must be called before base.SaveChanges(); the ProjectIDs are read afterwards.
+        /// </summary>
+        private static List<ProjectLocation> GetChangedProjectLocations(IEnumerable<DbEntityEntry> dbEntityEntries)
+        {
+            return dbEntityEntries
+                .Where(x => (x.State == EntityState.Added || x.State == EntityState.Modified ||
+                             x.State == EntityState.Deleted) && x.Entity is ProjectLocation)
+                .Select(x => (ProjectLocation) x.Entity)
+                .ToList();
+        }
+
+        /// <summary>
+        /// PF-2838: Project.GisAcres is a stored, geometry-derived acreage exposed on the GeoServer
+        /// WFS/WMS project layers. Computing it on the fly in dbo.vGeoServerProjectAttributes measured
+        /// ~3.5s per tenant-filtered WFS query, so it is maintained here on write instead.
+        /// Call this AFTER base.SaveChanges(), so inserted and updated geometry is visible to the
+        /// function, and while any surrounding TransactionScope is still open.
+        /// Raw SQL is deliberate: this is a derived value, so it should neither generate AuditLog rows
+        /// nor bump Project.LastUpdatedDate.
+        /// </summary>
+        private void RecomputeGisAcres(List<ProjectLocation> changedProjectLocations)
+        {
+            if (!changedProjectLocations.Any())
+            {
+                return;
+            }
+
+            // A ProjectLocation added via the Project navigation property has ProjectID == 0 until the
+            // save populates it; fall back to the navigation property for anything still unset.
+            var projectIDs = changedProjectLocations
+                .Select(x => x.ProjectID != 0 ? x.ProjectID : x.Project?.ProjectID ?? 0)
+                .Where(x => x != 0)
+                .Distinct()
+                .ToList();
+
+            if (!projectIDs.Any())
+            {
+                return;
+            }
+
+            // Safe to inline: these are ints. A project deleted in this same save simply matches no row.
+            var projectIDList = string.Join(",", projectIDs);
+            Database.ExecuteSqlCommand(
+                $"update dbo.Project set GisAcres = dbo.fProjectGisAcres(ProjectID) where ProjectID in ({projectIDList})");
         }
 
         private static void SetTenantIDForAllModifiedEntries(List<DbEntityEntry> dbEntityEntries, int tenantID)

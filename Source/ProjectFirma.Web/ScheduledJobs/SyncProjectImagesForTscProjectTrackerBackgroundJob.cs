@@ -49,6 +49,9 @@ namespace ProjectFirma.Web.ScheduledJobs
             {
                 var databaseEntities = new DatabaseEntities(tenantID);
                 var client = new HttpClient();
+                // Everything this job calls (projects + file-resource image bytes) lives on LtInfo.Scalar
+                // and authenticates via the X-LtInfo-Integration-Key header, so set it once on the client.
+                client.DefaultRequestHeaders.Add("X-LtInfo-Integration-Key", FirmaWebConfiguration.LTInfoApiKey);
 
                 var projects = databaseEntities.AllProjects.Where(x => x.TenantID == tenantID && x.ExternalID.HasValue).ToList();
                 var externalIDs = projects.Select(x => x.ExternalID.Value).ToList();
@@ -69,7 +72,9 @@ namespace ProjectFirma.Web.ScheduledJobs
 
                 var recentlyModifiedExternalIDs = new List<int>();
 
-                var getRecentlyModifiedProjectsUrl = $"{apiUrl}/projects/recently-modified?apiKey={FirmaWebConfiguration.LTInfoApiKey}&{queryParameter}";
+                // apiUrl is the LtInfo.Scalar origin (no path). Projects live under /api/projects and
+                // file-resource bytes under /file-resources — both on Scalar, both header-authenticated.
+                var getRecentlyModifiedProjectsUrl = $"{apiUrl}/api/projects/recently-modified?{queryParameter}";
                 var response = await client.GetAsync(getRecentlyModifiedProjectsUrl);
                 if (!response.IsSuccessStatusCode)
                 {
@@ -91,7 +96,7 @@ namespace ProjectFirma.Web.ScheduledJobs
                     var project = projects.Single(x => x.ExternalID == externalID);
                     Logger.Info($"Starting Project Images sync for ProjectID: {project?.ProjectID}; ExternalID: {externalID}");
 
-                    var getProjectImagesUrl = $"{apiUrl}/projects/{externalID}/project-images?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
+                    var getProjectImagesUrl = $"{apiUrl}/api/projects/{externalID}/project-images";
                     var getProjectImages = await client.GetAsync(getProjectImagesUrl);
                     if (!getProjectImages.IsSuccessStatusCode)
                     {
@@ -143,16 +148,22 @@ namespace ProjectFirma.Web.ScheduledJobs
                     Logger.Warn($"\tProjectID: {project.ProjectID}; ExternalID: {projectImageSimpleDto.ProjectID}. No Project Image Timing found for '{projectImageSimpleDto.ProjectImageTiming.ProjectImageTimingName}'");
                     continue;
                 }
-                var createPerson = databaseEntities.AllPeople.SingleOrDefault(x => x.TenantID == tenantID && x.PersonGuid == projectImageSimpleDto.FileResourceInfo.CreatePersonGUID) ??
-                                    databaseEntities.AllPeople.Where(x => x.TenantID == tenantID && x.RoleID == Role.Admin.RoleID || x.RoleID == Role.ESAAdmin.RoleID).OrderBy(x => x.RoleID).ThenBy(x => x.PersonID).FirstOrDefault();
+                // Match on email: both systems moved off the shared Keystone PersonGuid to Auth0.
+                // Falls back to the first Admin / ESA Admin when the author can't be matched.
+                var createPerson = (!string.IsNullOrWhiteSpace(projectImageSimpleDto.FileResourceInfo.CreatePersonEmail)
+                                       ? databaseEntities.AllPeople.FirstOrDefault(x => x.TenantID == tenantID && x.Email == projectImageSimpleDto.FileResourceInfo.CreatePersonEmail)
+                                       : null) ??
+                                    databaseEntities.AllPeople.Where(x => x.TenantID == tenantID && (x.RoleID == Role.Admin.RoleID || x.RoleID == Role.ESAAdmin.RoleID)).OrderBy(x => x.RoleID).ThenBy(x => x.PersonID).FirstOrDefault();
                 if (createPerson == null)
                 {
-                    Logger.Warn($"\tProjectID: {project.ProjectID}; ExternalID: {projectImageSimpleDto.ProjectID}. No Create Person found for '{projectImageSimpleDto.FileResourceInfo.CreatePersonGUID}' and the system could not default the Create Person to a current Admin or ESA Admin");
+                    Logger.Warn($"\tProjectID: {project.ProjectID}; ExternalID: {projectImageSimpleDto.ProjectID}. No Create Person found for email '{projectImageSimpleDto.FileResourceInfo.CreatePersonEmail}' and the system could not default the Create Person to a current Admin or ESA Admin");
                     continue;
                 }
 
-                // get file resource from lt info api
-                var getFileResource = $"{apiUrl}/FileResource/GetWithApiKey/{projectImageSimpleDto.FileResourceInfo.FileResourceInfoGUID}?apiKey={FirmaWebConfiguration.LTInfoApiKey}";
+                // get file resource bytes from LtInfo.Scalar (a duplicate of the internal API's endpoint,
+                // gated by the X-LtInfo-Integration-Key header set on the client). The internal LtInfo.API
+                // still serves /file-resources/* for the SPA, but ProjectFirma calls only Scalar.
+                var getFileResource = $"{apiUrl}/file-resources/{projectImageSimpleDto.FileResourceInfo.FileResourceInfoGUID}";
 
                 var response = await client.GetAsync(getFileResource);
                 if (!response.IsSuccessStatusCode)

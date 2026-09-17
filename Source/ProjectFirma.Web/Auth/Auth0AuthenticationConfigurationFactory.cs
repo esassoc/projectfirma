@@ -26,6 +26,18 @@ namespace ProjectFirma.Web.Auth
   
     public class Auth0AuthenticationConfigurationFactory
     {
+        /// <summary>
+        /// Query string key we pass along to ask Auth0's Universal Login to open on a particular screen.
+        /// Auth0 recognizes this as an authorize-request parameter; we round trip it from
+        /// <see cref="AccountController.BeginSignUp"/> through /Account/LogOn to the authorize request.
+        /// </summary>
+        public const string ScreenHintQueryStringKey = "screen_hint";
+
+        /// <summary>
+        /// The only <see cref="ScreenHintQueryStringKey"/> value we honor; lands the user on Auth0's Sign Up form.
+        /// </summary>
+        public const string ScreenHintSignUp = "signup";
+
         public CookieAuthenticationOptions CreateAuth0CookieAuthenticationOptions()
         {
             return new CookieAuthenticationOptions
@@ -209,6 +221,13 @@ namespace ProjectFirma.Web.Auth
                         // - ReturnUrl was explicitly provided, OR
                         // - we don't already have one AND this isn't an auth plumbing request
                         //var explicitReturnUrl = req.Query["ReturnUrl"];
+                        // If we were asked to land the user on the Sign Up form (invited users have no
+                        // account yet), pass the hint along to Auth0's authorize request.
+                        if (string.Equals(req.Query[ScreenHintQueryStringKey], ScreenHintSignUp, StringComparison.OrdinalIgnoreCase))
+                        {
+                            notification.ProtocolMessage.SetParameter(ScreenHintQueryStringKey, ScreenHintSignUp);
+                        }
+
                         bool shouldSet = !looksLikeAuth0Return;
 
                         if (shouldSet)

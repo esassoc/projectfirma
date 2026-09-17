@@ -31,7 +31,7 @@ namespace ProjectFirmaModels.Models
         /// <summary>
         /// Constructor for building a new object with MaximalConstructor required fields in preparation for insert into database
         /// </summary>
-        public ExternalMapLayer(int externalMapLayerID, string displayName, string layerUrl, string layerDescription, string featureNameField, bool displayOnAllProjectMaps, bool layerIsOnByDefault, bool isActive, bool isTiledMapService, int? mapLegendImageFileResourceInfoID) : this()
+        public ExternalMapLayer(int externalMapLayerID, string displayName, string layerUrl, string layerDescription, string featureNameField, bool displayOnAllProjectMaps, bool layerIsOnByDefault, bool isActive, bool isTiledMapService, int? mapLegendImageFileResourceInfoID, string mapLayerGroupName, int? sortOrder) : this()
         {
             this.ExternalMapLayerID = externalMapLayerID;
             this.DisplayName = displayName;
@@ -43,6 +43,8 @@ namespace ProjectFirmaModels.Models
             this.IsActive = isActive;
             this.IsTiledMapService = isTiledMapService;
             this.MapLegendImageFileResourceInfoID = mapLegendImageFileResourceInfoID;
+            this.MapLayerGroupName = mapLayerGroupName;
+            this.SortOrder = sortOrder;
         }
 
         /// <summary>
@@ -124,6 +126,8 @@ namespace ProjectFirmaModels.Models
         public bool IsActive { get; set; }
         public bool IsTiledMapService { get; set; }
         public int? MapLegendImageFileResourceInfoID { get; set; }
+        public string MapLayerGroupName { get; set; }
+        public int? SortOrder { get; set; }
         [NotMapped]
         public int PrimaryKey { get { return ExternalMapLayerID; } set { ExternalMapLayerID = value; } }
 
@@ -136,6 +140,7 @@ namespace ProjectFirmaModels.Models
             public const int LayerUrl = 500;
             public const int LayerDescription = 200;
             public const int FeatureNameField = 100;
+            public const int MapLayerGroupName = 100;
         }
     }
 }

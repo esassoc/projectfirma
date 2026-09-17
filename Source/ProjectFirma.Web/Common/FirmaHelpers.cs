@@ -94,6 +94,24 @@ namespace ProjectFirma.Web.Common
             return logInUrl;
         }
 
+        /// <summary>
+        /// Absolute URL that starts account creation rather than log in. Only Auth0 has a distinct sign up
+        /// screen; for the other authentication types this is just the log in URL.
+        /// </summary>
+        public static string GenerateAbsoluteSignUpUrl()
+        {
+            switch (FirmaWebConfiguration.AuthenticationType)
+            {
+                case AuthenticationType.Auth0Auth:
+                    return SitkaRoute<AccountController>.BuildAbsoluteUrlHttpsFromExpression(c => c.BeginSignUp());
+                case AuthenticationType.KeystoneAuth:
+                case AuthenticationType.LocalAuth:
+                    return GenerateAbsoluteLogInUrl();
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         public static string GenerateLogOutUrlWithReturnUrl()
         {
             var logOutUrl = SitkaRoute<AccountController>.BuildUrlFromExpression(c => c.LogOff());

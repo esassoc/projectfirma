@@ -37,7 +37,6 @@ namespace ProjectFirmaModels.Models.DataTransferObjects
         public string ProjectLocationAreaType { get; set; }
         public string PrimaryContactPersonFullName { get; set; }
         public string PrimaryContactPersonEmail { get; set; }
-        public Guid? PrimaryContactPersonGuid { get; set; }
         public ProjectApprovalStatusSimpleDto ProjectApprovalStatus { get; set; }
         public List<ProjectImplementingOrganizationOrProjectFundingOrganizationSimpleDto> Organizations { get; set; }
         public string ProjectLocationPointGeoJson { get; set; }

@@ -1,23 +1,20 @@
 //  IMPORTANT:
 //  This file is generated. Your changes will be lost.
 //  Use the corresponding partial class for customizations.
-//  Source View: [dbo].[vGeoServerProjectSimpleLocations]
+//  Source View: [dbo].[vGeoServerProjectAttributes]
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 
 namespace ProjectFirmaModels.Models
 {
-    public class vGeoServerProjectSimpleLocationsConfiguration : EntityTypeConfiguration<vGeoServerProjectSimpleLocations>
+    public class vGeoServerProjectAttributesConfiguration : EntityTypeConfiguration<vGeoServerProjectAttributes>
     {
-        public vGeoServerProjectSimpleLocationsConfiguration() : this("dbo"){}
+        public vGeoServerProjectAttributesConfiguration() : this("dbo"){}
 
-        public vGeoServerProjectSimpleLocationsConfiguration(string schema)
+        public vGeoServerProjectAttributesConfiguration(string schema)
         {
-            ToTable("vGeoServerProjectSimpleLocations", schema);
+            ToTable("vGeoServerProjectAttributes", schema);
             HasKey(x => x.PrimaryKey);
-            
-            
-            
             
             
             

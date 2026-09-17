@@ -22,6 +22,7 @@ using LtInfo.Common;
 using LtInfo.Common.Mvc;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
+using ProjectFirma.Web.Auth;
 using ProjectFirma.Web.Common;
 using ProjectFirma.Web.Security;
 using ProjectFirma.Web.Security.Shared;
@@ -59,6 +60,22 @@ namespace ProjectFirma.Web.Controllers
         [AllowAnonymous]
         public ActionResult BeginLogin()
         {
+            return BeginAuth0Flow(false);
+        }
+
+        /// <summary>
+        /// Same as <see cref="BeginLogin"/>, except we ask Auth0's Universal Login to open on the Sign Up
+        /// form rather than the Log In form. Used for people who have been invited to the site and so do
+        /// not have an account yet.
+        /// </summary>
+        [AllowAnonymous]
+        public ActionResult BeginSignUp()
+        {
+            return BeginAuth0Flow(true);
+        }
+
+        private ActionResult BeginAuth0Flow(bool startOnSignUpScreen)
+        {
             var referrer = Request.UrlReferrer?.AbsoluteUri;
             var safeReturnUrl = FirmaHelpers.ValidateReturnUrl(referrer);
 
@@ -79,6 +96,11 @@ namespace ProjectFirma.Web.Controllers
             
             var sitka = initiateFromTenantDomainUrl + "/Account/LogOn"
                                                     + "?returnTo=" + HttpUtility.UrlEncode(returnFromSitkaUrl);
+
+            if (startOnSignUpScreen)
+            {
+                sitka += $"&{Auth0AuthenticationConfigurationFactory.ScreenHintQueryStringKey}={Auth0AuthenticationConfigurationFactory.ScreenHintSignUp}";
+            }
 
             return Redirect(sitka);
         }

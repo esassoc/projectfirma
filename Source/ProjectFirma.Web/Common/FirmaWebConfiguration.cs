@@ -102,6 +102,9 @@ namespace ProjectFirma.Web.Common
 
         public static readonly string MapBoxApiKey = SitkaConfiguration.GetRequiredAppSetting("MapBoxApiKey");
         
+        // Shared secret for the LtInfo.Scalar integration API (TCS Project Tracker sync). Sent in the
+        // X-LtInfo-Integration-Key header on every call — ProjectFirma talks ONLY to Scalar (both project
+        // data and file-resource image bytes), never the internal LtInfo.API.
         public static readonly string LTInfoApiKey = SitkaConfiguration.GetRequiredAppSetting("LTInfoApiKey");
         public static readonly string PendingProjectsUploadExcelTemplate = SitkaConfiguration.GetRequiredAppSetting("PendingProjectsUploadExcelTemplate");
 

@@ -578,5 +578,10 @@ namespace ProjectFirma.Web.Common
             var geoServerNamespace = GetTenantAttributeFromCache().GeoServerNamespace;
             return $"{FirmaWebConfiguration.GeoServerUrl}{geoServerNamespace}/wms";
         }
+
+        public static bool EnableDetailedLocationPolygonsOnProjectMap()
+        {
+            return GetTenantAttributeFromCache().EnableDetailedLocationPolygonsOnProjectMap ?? false;
+        }
     }
 }

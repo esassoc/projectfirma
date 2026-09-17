@@ -529,7 +529,7 @@ namespace ProjectFirma.Web.Controllers
 
             if (!viewModel.DoNotSendInviteEmailIfExisting)
             {
-                SendExistingKeystoneUserCreatedMessage(newUser, CurrentPerson);
+                SendInvitedUserCreatedMessage(newUser, CurrentPerson);
             }
 
             SetMessageForDisplay($"{newUser.GetFullNameFirstLastAndOrgAsUrl(CurrentFirmaSession)} successfully added. You may want to assign them a role.");
@@ -592,31 +592,38 @@ namespace ProjectFirma.Web.Controllers
         }
 
 
-        private static void SendExistingKeystoneUserCreatedMessage(Person person, Person currentPerson)
+        private static void SendInvitedUserCreatedMessage(Person person, Person currentPerson)
         {
             var toolDisplayName = MultiTenantHelpers.GetToolDisplayName();
+            var homeUrl = SitkaRoute<HomeController>.BuildAbsoluteUrlHttpsFromExpression(x => x.Index());
+            var signUpUrl = FirmaHelpers.GenerateAbsoluteSignUpUrl();
             var subject = $"Invitation to {toolDisplayName}";
             var message = $@"
 <div style='font-size: 12px; font-family: Arial'>
+    <p>
     Welcome {person.FirstName},
-    <p>
-    You have been invited by a colleague, {currentPerson.GetFullNameFirstLast()}, to check out <a href=""{SitkaRoute<HomeController>.BuildAbsoluteUrlHttpsFromExpression(x => x.Index())}\"">{toolDisplayName}</a>.
-</p>
-    <p>
-    Because you have logged into other systems that use the same log in service (Keystone) that {toolDisplayName} uses, you already have an account, but it needs to be activated for {toolDisplayName}.
     </p>
     <p>
-    When you have a moment, please activate your account by logging in:
+    You have been invited by a colleague, {currentPerson.GetFullNameFirstLast()}, to check out <a href=""{homeUrl}"">{toolDisplayName}</a>.
     </p>
-    <strong>Log in here:</strong>  <a href=""{FirmaHelpers.GenerateAbsoluteLogInUrl()}"">{toolDisplayName}</a><br />
-    <strong>Your user name is:</strong> {person.LoginName}<br />
     <p>
-    If you don't remember your password, you will be able to reset it from the link above.
+    To get started, you will need to create an account. Please follow the link below to sign up, and be sure to register using this email address:
+    </p>
+    <p>
+    <strong>Sign up here:</strong> <a href=""{signUpUrl}"">Create your account</a><br />
+    <strong>Email address to use:</strong> {person.Email}
+    </p>
+    <p>
+    Using this exact email address is important; it is how your new account gets connected to the access that has already been set up for you in {toolDisplayName}. If you sign up with a different email address, you will not have that access.
+    </p>
+    <p>
+    Once your account is created, you can log in any time from <a href=""{homeUrl}"">{toolDisplayName}</a>.
     </p>
     <p>
     Sincerely,<br />
     The {toolDisplayName} team<br/><br/><img src=""cid:tool-logo"" width=""160"" />
-    </p>";
+    </p>
+</div>";
             var mailMessage = new MailMessage
             {
                 From = new MailAddress(FirmaWebConfiguration.DoNotReplyEmail),

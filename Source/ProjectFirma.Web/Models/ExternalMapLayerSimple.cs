@@ -36,9 +36,13 @@ namespace ProjectFirma.Web.Models
         public bool IsActive { get; set; }
         public bool IsTiledMapService { get; set; }
         public int? MapLegendImageFileResourceInfoID { get; set; }
+        public string MapLayerGroupName { get; set; }
+        public int? SortOrder { get; set; }
 
         public ExternalMapLayerSimple(ExternalMapLayer externalMapLayer)
         {
+            MapLayerGroupName = externalMapLayer.MapLayerGroupName;
+            SortOrder = externalMapLayer.SortOrder;
             ExternalMapLayerID = externalMapLayer.ExternalMapLayerID;
             TenantID = externalMapLayer.TenantID;
             DisplayName = externalMapLayer.MapLegendImageFileResourceInfoID.HasValue ? $"<span>{externalMapLayer.DisplayName} <img src='{externalMapLayer.MapLegendImageFileResourceInfo.GetFileResourceUrl()}' height='20px' /></span>" : externalMapLayer.DisplayName;

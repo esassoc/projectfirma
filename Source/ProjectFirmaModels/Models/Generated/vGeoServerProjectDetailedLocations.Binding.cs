@@ -26,7 +26,7 @@ namespace ProjectFirmaModels.Models
         /// <summary>
         /// Constructor for building a new object with MaximalConstructor required fields in preparation for insert into database
         /// </summary>
-        public vGeoServerProjectDetailedLocations(int projectLocationID, int primaryKey, int projectID, string projectName, int tenantID, string tenantName, bool locationIsPrivate, int projectApprovalStatusID, string geometryType) : this()
+        public vGeoServerProjectDetailedLocations(int projectLocationID, int primaryKey, int projectID, string projectName, int tenantID, string tenantName, bool locationIsPrivate, int projectApprovalStatusID, string geometryType, int projectStageID, string projectStageColor, string projectDescription, string projectStage, string taxonomyLeaf, string primaryContactOrganization, string primaryContactPerson, int? planningDesignStartYear, int? implementationStartYear, int? completionYear, decimal? securedFunding, decimal? targetedFunding, decimal? estimatedTotalCost, decimal? gisAcres, DateTime projectLastUpdated) : this()
         {
             this.ProjectLocationID = projectLocationID;
             this.PrimaryKey = primaryKey;
@@ -37,6 +37,21 @@ namespace ProjectFirmaModels.Models
             this.LocationIsPrivate = locationIsPrivate;
             this.ProjectApprovalStatusID = projectApprovalStatusID;
             this.GeometryType = geometryType;
+            this.ProjectStageID = projectStageID;
+            this.ProjectStageColor = projectStageColor;
+            this.ProjectDescription = projectDescription;
+            this.ProjectStage = projectStage;
+            this.TaxonomyLeaf = taxonomyLeaf;
+            this.PrimaryContactOrganization = primaryContactOrganization;
+            this.PrimaryContactPerson = primaryContactPerson;
+            this.PlanningDesignStartYear = planningDesignStartYear;
+            this.ImplementationStartYear = implementationStartYear;
+            this.CompletionYear = completionYear;
+            this.SecuredFunding = securedFunding;
+            this.TargetedFunding = targetedFunding;
+            this.EstimatedTotalCost = estimatedTotalCost;
+            this.GisAcres = gisAcres;
+            this.ProjectLastUpdated = projectLastUpdated;
         }
 
         /// <summary>
@@ -53,6 +68,21 @@ namespace ProjectFirmaModels.Models
             this.LocationIsPrivate = vGeoServerProjectDetailedLocations.LocationIsPrivate;
             this.ProjectApprovalStatusID = vGeoServerProjectDetailedLocations.ProjectApprovalStatusID;
             this.GeometryType = vGeoServerProjectDetailedLocations.GeometryType;
+            this.ProjectStageID = vGeoServerProjectDetailedLocations.ProjectStageID;
+            this.ProjectStageColor = vGeoServerProjectDetailedLocations.ProjectStageColor;
+            this.ProjectDescription = vGeoServerProjectDetailedLocations.ProjectDescription;
+            this.ProjectStage = vGeoServerProjectDetailedLocations.ProjectStage;
+            this.TaxonomyLeaf = vGeoServerProjectDetailedLocations.TaxonomyLeaf;
+            this.PrimaryContactOrganization = vGeoServerProjectDetailedLocations.PrimaryContactOrganization;
+            this.PrimaryContactPerson = vGeoServerProjectDetailedLocations.PrimaryContactPerson;
+            this.PlanningDesignStartYear = vGeoServerProjectDetailedLocations.PlanningDesignStartYear;
+            this.ImplementationStartYear = vGeoServerProjectDetailedLocations.ImplementationStartYear;
+            this.CompletionYear = vGeoServerProjectDetailedLocations.CompletionYear;
+            this.SecuredFunding = vGeoServerProjectDetailedLocations.SecuredFunding;
+            this.TargetedFunding = vGeoServerProjectDetailedLocations.TargetedFunding;
+            this.EstimatedTotalCost = vGeoServerProjectDetailedLocations.EstimatedTotalCost;
+            this.GisAcres = vGeoServerProjectDetailedLocations.GisAcres;
+            this.ProjectLastUpdated = vGeoServerProjectDetailedLocations.ProjectLastUpdated;
             CallAfterConstructor(vGeoServerProjectDetailedLocations);
         }
 
@@ -67,5 +97,20 @@ namespace ProjectFirmaModels.Models
         public bool LocationIsPrivate { get; set; }
         public int ProjectApprovalStatusID { get; set; }
         public string GeometryType { get; set; }
+        public int ProjectStageID { get; set; }
+        public string ProjectStageColor { get; set; }
+        public string ProjectDescription { get; set; }
+        public string ProjectStage { get; set; }
+        public string TaxonomyLeaf { get; set; }
+        public string PrimaryContactOrganization { get; set; }
+        public string PrimaryContactPerson { get; set; }
+        public int? PlanningDesignStartYear { get; set; }
+        public int? ImplementationStartYear { get; set; }
+        public int? CompletionYear { get; set; }
+        public decimal? SecuredFunding { get; set; }
+        public decimal? TargetedFunding { get; set; }
+        public decimal? EstimatedTotalCost { get; set; }
+        public decimal? GisAcres { get; set; }
+        public DateTime ProjectLastUpdated { get; set; }
     }
 }

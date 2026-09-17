@@ -1,20 +1,34 @@
 //  IMPORTANT:
 //  This file is generated. Your changes will be lost.
 //  Use the corresponding partial class for customizations.
-//  Source View: [dbo].[vGeoServerProjectDetailedLocations]
+//  Source View: [dbo].[vGeoServerTcsiForestFuelsTreatmentAcres]
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 
 namespace ProjectFirmaModels.Models
 {
-    public class vGeoServerProjectDetailedLocationsConfiguration : EntityTypeConfiguration<vGeoServerProjectDetailedLocations>
+    public class vGeoServerTcsiForestFuelsTreatmentAcresConfiguration : EntityTypeConfiguration<vGeoServerTcsiForestFuelsTreatmentAcres>
     {
-        public vGeoServerProjectDetailedLocationsConfiguration() : this("dbo"){}
+        public vGeoServerTcsiForestFuelsTreatmentAcresConfiguration() : this("dbo"){}
 
-        public vGeoServerProjectDetailedLocationsConfiguration(string schema)
+        public vGeoServerTcsiForestFuelsTreatmentAcresConfiguration(string schema)
         {
-            ToTable("vGeoServerProjectDetailedLocations", schema);
+            ToTable("vGeoServerTcsiForestFuelsTreatmentAcres", schema);
             HasKey(x => x.PrimaryKey);
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             
             
             

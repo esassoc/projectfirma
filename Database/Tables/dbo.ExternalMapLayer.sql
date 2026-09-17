@@ -14,6 +14,8 @@ CREATE TABLE [dbo].[ExternalMapLayer](
 	[IsActive] [bit] NOT NULL,
 	[IsTiledMapService] [bit] NOT NULL,
 	[MapLegendImageFileResourceInfoID] [int] NULL,
+	[MapLayerGroupName] [varchar](100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[SortOrder] [int] NULL,
  CONSTRAINT [PK_ExternalMapLayer_ExternalMapLayerID] PRIMARY KEY CLUSTERED 
 (
 	[ExternalMapLayerID] ASC
