@@ -13,7 +13,7 @@ namespace ProjectFirmaModels.UnitTestCommon
     public class GeoserverConfigTest
     {
         // Might need to vary, but I'm hoping it's consistent
-        public const string SvnSitkaGeoserverWorkspacesRootDir = "c:\\svn\\sitkatech\\trunk\\ProjectFirma\\GeoServerDocker\\data_dir\\workspaces";
+        public const string SvnSitkaGeoserverWorkspacesRootDir = "c:\\svn\\sitkatech\\trunk\\ProjectFirma\\Geoserver\\data_dir\\workspaces";
 
         public static List<string> GetWorkspaceDirectories()
         {

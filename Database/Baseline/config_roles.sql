@@ -6,7 +6,6 @@ select '${db-user}' as AccountName, 'U' as AccountType
 into #accountsToCreate
 union select '${db-batch-user}', 'U'
 union select '${db-geoserver-user}', 'U'
-union select '${db-geoserver-docker-user}', 'S'
 union select 'Sitka\Rocket QA Support', 'G'
 union select 'Sitka\Rocket QA Tester', 'G'
 union select 'Sitka\Hawk Moth QA Support', 'G'
@@ -43,6 +42,7 @@ where ac.AccountName is null
 declare @accountName varchar(200)
 declare @accountType varchar(2)
 declare @sql nvarchar(1000)
+declare @roleName sysname
 
 while exists(select 1 from #allAccounts)
 begin
@@ -91,8 +91,15 @@ begin
         exec sp_executesql @sql    
     end
     
-    exec sp_addrolemember 'db_owner', @accountName
-    print 'added user [' + @accountName + '] to db_owner role'
+    -- GeoServer's Windows account only reads the vGeoServer* views
+    set @roleName = case when @accountName = '${db-geoserver-user}' then 'db_datareader' else 'db_owner' end
+    exec sp_addrolemember @roleName, @accountName
+    print 'added user [' + @accountName + '] to ' + @roleName + ' role'
+    if @roleName = 'db_datareader' and is_rolemember('db_owner', @accountName) = 1
+    begin
+        exec sp_droprolemember 'db_owner', @accountName
+        print 'removed user [' + @accountName + '] from db_owner role'
+    end
 
     delete from #accountsToCreate where AccountName = @accountName
 end
