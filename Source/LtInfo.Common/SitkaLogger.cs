@@ -66,9 +66,13 @@ namespace LtInfo.Common
             LogDetailedErrorMessage(additionalMessage, exception, context);
         }
 
+        /// <summary>
+        /// The exception is passed to log4net as an object (not pasted into the message) so App Alerts can group by exception type and message and show the type in the subject
+        /// </summary>
         public void LogDetailedErrorMessage(string additionalMessage, Exception exception, HttpContext context)
         {
-            LogDetailedErrorMessage(string.Format("{0}:{1}{2}", additionalMessage, Environment.NewLine, exception), context);
+            Logger.Error(BuildDetailedMessage(additionalMessage, context), exception);
+            SitkaGlobalBase.CancelErrorLoggingFromApplicationEnd();
         }
 
         public void LogDetailedErrorMessage(string additionalMessage)
@@ -79,11 +83,15 @@ namespace LtInfo.Common
 
         public void LogDetailedErrorMessage(string additionalMessage, HttpContext context)
         {
+            Logger.Error(BuildDetailedMessage(additionalMessage, context));
+            SitkaGlobalBase.CancelErrorLoggingFromApplicationEnd();
+        }
+
+        private string BuildDetailedMessage(string additionalMessage, HttpContext context)
+        {
             var sessionDebugInfo = context != null ? GetUserAndSessionInformationForErrorSafely(context) : string.Empty;
             var requestDebugInfo = context != null ? DebugInfo(context.Request) : string.Empty;
-            var logMessage = string.Format("{1}{0}{0}{2}{0}{0}{3}", Environment.NewLine, additionalMessage, sessionDebugInfo, requestDebugInfo);
-            Logger.Error(logMessage);
-            SitkaGlobalBase.CancelErrorLoggingFromApplicationEnd();
+            return string.Format("{1}{0}{0}{2}{0}{0}{3}", Environment.NewLine, additionalMessage, sessionDebugInfo, requestDebugInfo);
         }
         
         public void LogDetailedErrorMessage(SitkaRequestInfo requestInfo)
@@ -108,7 +116,8 @@ namespace LtInfo.Common
 
         public void LogDetailedWarningMessage(string additionalMessage, Exception exception, HttpContext context)
         {
-            LogDetailedWarningMessage(string.Format("{0}:{1}{2}", additionalMessage, Environment.NewLine, exception), context);
+            Logger.Warn(BuildDetailedMessage(additionalMessage, context), exception);
+            SitkaGlobalBase.CancelErrorLoggingFromApplicationEnd();
         }
 
         public void LogDetailedWarningMessage(string additionalMessage)
@@ -122,10 +131,7 @@ namespace LtInfo.Common
         /// </summary>
         public void LogDetailedWarningMessage(string additionalMessage, HttpContext context)
         {
-            var sessionDebugInfo = context != null ? GetUserAndSessionInformationForErrorSafely(context) : string.Empty;
-            var requestDebugInfo = context != null ? DebugInfo(context.Request) : string.Empty;
-            var logMessage = string.Format("{1}{0}{0}{2}{0}{0}{3}", Environment.NewLine, additionalMessage, sessionDebugInfo, requestDebugInfo);
-            Logger.Warn(logMessage);
+            Logger.Warn(BuildDetailedMessage(additionalMessage, context));
             SitkaGlobalBase.CancelErrorLoggingFromApplicationEnd();
         }
 

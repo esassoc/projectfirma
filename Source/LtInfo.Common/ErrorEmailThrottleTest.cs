@@ -76,11 +76,88 @@ namespace LtInfo.Common
             Assert.That(stormDecision.SubjectTag, Is.StringContaining("[ALERT STORM]"));
 
             Assert.That(throttle.Evaluate("page4", false, Start.AddMinutes(5)).ShouldSend, Is.False);
-            Assert.That(throttle.Evaluate("page5", true, Start.AddMinutes(6)).ShouldSend, Is.False, "FATAL still counts toward the storm cap");
+            Assert.That(throttle.Evaluate("page5", false, Start.AddMinutes(6)).ShouldSend, Is.False);
 
             var afterStorm = throttle.Evaluate("page6", false, Start.AddMinutes(16));
             Assert.That(afterStorm.ShouldSend, Is.True);
             Assert.That(afterStorm.BodyPreamble, Is.StringContaining("Alert storm over: 2 error email(s) were suppressed"));
+        }
+
+        [Test]
+        public void FatalDuringStormIsSentWithoutEndingOrRestartingTheStorm()
+        {
+            var throttle = new ErrorEmailThrottle(TimeSpan.FromMinutes(15), 3);
+            Enumerable.Range(0, 4).ToList().ForEach(i => throttle.Evaluate("page" + i, false, Start.AddSeconds(i))); // 4th starts the storm
+
+            var fatal = throttle.Evaluate("fatal", true, Start.AddSeconds(10));
+            Assert.That(fatal.ShouldSend, Is.True);
+            Assert.That(fatal.SubjectTag, Is.Not.StringContaining("[ALERT STORM]"), "A FATAL during a storm doesn't start a new storm");
+            Assert.That(fatal.BodyPreamble, Is.StringContaining("because it is FATAL"));
+
+            Assert.That(throttle.Evaluate("page9", false, Start.AddMinutes(1)).ShouldSend, Is.False, "The storm is still on after the FATAL");
+            Assert.That(throttle.Evaluate("page10", false, Start.AddMinutes(16)).BodyPreamble, Is.StringContaining("Alert storm over: 1 error email(s)"));
+        }
+
+        [Test]
+        public void StormStillPausesWhenRepeatWindowIsTurnedOff()
+        {
+            var throttle = new ErrorEmailThrottle(TimeSpan.Zero, 3);
+            Assert.That(throttle.StormPause, Is.EqualTo(TimeSpan.FromMinutes(15)));
+            Enumerable.Range(0, 3).ToList().ForEach(i => throttle.Evaluate("a", false, Start.AddSeconds(i)));
+
+            var stormDecision = throttle.Evaluate("a", false, Start.AddSeconds(3));
+            Assert.That(stormDecision.SubjectTag, Is.EqualTo("[ALERT STORM]"));
+            Assert.That(stormDecision.BodyPreamble, Is.StringContaining("paused for 15 minutes"));
+
+            Assert.That(throttle.Evaluate("a", false, Start.AddSeconds(4)).ShouldSend, Is.False);
+            Assert.That(throttle.Evaluate("a", false, Start.AddMinutes(5)).ShouldSend, Is.False);
+            var afterStorm = throttle.Evaluate("a", false, Start.AddMinutes(16));
+            Assert.That(afterStorm.ShouldSend, Is.True);
+            Assert.That(afterStorm.SubjectTag, Is.Empty);
+        }
+
+        [Test]
+        public void RepeatsOfAnErrorThatStoppedAreReportedOnTheNextEmail()
+        {
+            var throttle = new ErrorEmailThrottle(TimeSpan.FromMinutes(15), 0);
+            throttle.Evaluate("a", false, Start);
+            throttle.Evaluate("a", false, Start.AddMinutes(1));
+            throttle.Evaluate("a", false, Start.AddMinutes(2));
+
+            var otherError = throttle.Evaluate("b", false, Start.AddMinutes(16));
+            Assert.That(otherError.ShouldSend, Is.True);
+            Assert.That(otherError.BodyPreamble, Is.StringContaining("2 more time(s) since 10:00: a"));
+
+            var aAgain = throttle.Evaluate("a", false, Start.AddMinutes(17));
+            Assert.That(aAgain.ShouldSend, Is.True, "Once reported, the error starts fresh");
+            Assert.That(aAgain.SubjectTag, Is.Empty, "Its repeats were already reported, so not reported twice");
+        }
+
+        [Test]
+        public void ExpiredRepeatSummaryIsCapped()
+        {
+            var throttle = new ErrorEmailThrottle(TimeSpan.FromMinutes(15), 0);
+            for (var i = 0; i < 12; i++)
+            {
+                throttle.Evaluate("error" + i, false, Start);
+                throttle.Evaluate("error" + i, false, Start.AddMinutes(1));
+            }
+
+            var decision = throttle.Evaluate("new", false, Start.AddMinutes(16));
+            Assert.That(decision.BodyPreamble.Split('\n').Count(x => x.Contains("more time(s) since")), Is.EqualTo(10));
+            Assert.That(decision.BodyPreamble, Is.StringContaining("...and 2 more"));
+        }
+
+        [Test]
+        public void TrackedSignaturesAreHardCapped()
+        {
+            var throttle = new ErrorEmailThrottle(TimeSpan.FromMinutes(15), 0);
+            for (var i = 0; i <= 1000; i++)
+            {
+                throttle.Evaluate("error" + i, false, Start.AddMilliseconds(i));
+            }
+            Assert.That(throttle.Evaluate("error0", false, Start.AddMinutes(1)).ShouldSend, Is.True, "The oldest signature was evicted to stay at the cap");
+            Assert.That(throttle.Evaluate("error1000", false, Start.AddMinutes(1)).ShouldSend, Is.False, "Recent signatures are still tracked");
         }
 
         [Test]
