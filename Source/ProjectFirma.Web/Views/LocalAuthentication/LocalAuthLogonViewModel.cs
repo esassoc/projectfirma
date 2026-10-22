@@ -69,7 +69,7 @@ namespace ProjectFirma.Web.Views.LocalAuthentication
                 catch (Exception e)
                 {
                     errors.Add(new ValidationResult("There was a problem uploading your file geodatabase. Verify it meets the requirements and is not corrupt."));
-                    SitkaLogger.Instance.LogDetailedErrorMessage(e);
+                    SitkaLogger.Instance.LogDetailedWarningMessage(e);
                 }
 
                 if (featureClassNames != null)
@@ -85,7 +85,7 @@ namespace ProjectFirma.Web.Views.LocalAuthentication
                             catch (Exception e)
                             {
                                 errors.Add(new ValidationResult($"There was a problem processing the Feature Class \"{x}\"."));
-                                SitkaLogger.Instance.LogDetailedErrorMessage(e);
+                                SitkaLogger.Instance.LogDetailedWarningMessage(e);
                                 return null;
                             }
                         }).Where(x => x.Value != null && OrganizationBoundaryStaging.IsUsableFeatureCollectionGeoJson(x.Value));

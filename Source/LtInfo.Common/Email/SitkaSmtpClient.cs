@@ -142,7 +142,7 @@ namespace LtInfo.Common.Email
             }
             else
             {
-                _logger.Error(string.Format("Skipping sending email because configuration setting IsEmailEnabled={0}, normally the site should be running with it on, are you sure you want emails disabled? (did not cause a user visible exception)\r\nMail Message that did not get sent:\r\n{1}", SitkaWebConfiguration.IsEmailEnabled, humanReadableDisplayOfMessage));
+                _logger.Warn(string.Format("Skipping sending email because configuration setting IsEmailEnabled={0}, normally the site should be running with it on, are you sure you want emails disabled? (did not cause a user visible exception)\r\nMail Message that did not get sent:\r\n{1}", SitkaWebConfiguration.IsEmailEnabled, humanReadableDisplayOfMessage));
             }
         }
 

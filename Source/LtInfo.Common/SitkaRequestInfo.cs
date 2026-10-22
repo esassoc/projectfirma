@@ -49,7 +49,7 @@ namespace LtInfo.Common
             StatusDescription = context.Response.StatusDescription;
 
             DebugInfo = new SitkaDebugInfo(context.Request);
-            SessionInfo = SitkaLogger.Instance.GetUserAndSessionInformationForError(context);
+            SessionInfo = SitkaLogger.Instance.GetUserAndSessionInformationForErrorSafely(context);
         }
 
         /// <summary>

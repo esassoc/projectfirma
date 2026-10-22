@@ -394,6 +394,10 @@
     <Compile Include="SitkaSetupFixture.cs" />
     <Compile Include="SitkaWcfException.cs" />
     <Compile Include="SmtpAppenderWithPathAndExceptionTypeInSubject.cs" />
+    <Compile Include="ErrorEmailThrottle.cs" />
+    <Compile Include="ErrorEmailThrottleTest.cs" />
+    <Compile Include="NonActionableErrorClassifier.cs" />
+    <Compile Include="NonActionableErrorClassifierTest.cs" />
     <Compile Include="StringFormatsTest.cs" />
     <Compile Include="Tasks\LtInfoTaskBase.cs" />
     <Compile Include="Tasks\SitkaTaskBase.cs" />

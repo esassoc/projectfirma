@@ -69,7 +69,8 @@ namespace ProjectFirma.Web.ScheduledJobs
                 catch (Exception ex)
                 {
                     // Wrap and rethrow with the information about which job encountered the problem
-                    Logger.Error(ex.Message);
+                    // Log once with the full exception. Hangfire's own failure logging is kept out of App Alerts by a filter on the SmtpAppender
+                    Logger.Error($"Firma Job {JobName} failed", ex);
                     throw new ScheduledBackgroundJobException(JobName, ex);
                 }
             }
