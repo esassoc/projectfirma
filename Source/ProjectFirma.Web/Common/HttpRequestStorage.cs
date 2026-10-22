@@ -20,6 +20,7 @@ Source code is available upon request via <support@sitkatech.com>.
 -----------------------------------------------------------------------*/
 
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Principal;
 using System.Web;
 using LtInfo.Common;
@@ -78,7 +79,8 @@ namespace ProjectFirma.Web.Common
                             var tenantFromHostUrl = MultiTenantHelpers.GetTenantFromHostUrl(httpContext.Request.Url);
                             if (!tenantFromHostUrl.TenantEnabled)
                             {
-                                throw new SitkaDisplayErrorException($"Tenant {tenantFromHostUrl.TenantName} is disabled");
+                                // 410 Gone: a client hitting a disabled tenant is expected and not App Alerts email worthy (see NonActionableErrorClassifier)
+                                throw new SitkaDisplayErrorExceptionWithHttpCode(HttpStatusCode.Gone, $"Tenant {tenantFromHostUrl.TenantName} is disabled");
                             }
                             return tenantFromHostUrl;
                         }

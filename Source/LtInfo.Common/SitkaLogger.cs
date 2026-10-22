@@ -79,7 +79,7 @@ namespace LtInfo.Common
 
         public void LogDetailedErrorMessage(string additionalMessage, HttpContext context)
         {
-            var sessionDebugInfo = context != null ? GetUserAndSessionInformationForError(context) : string.Empty;
+            var sessionDebugInfo = context != null ? GetUserAndSessionInformationForErrorSafely(context) : string.Empty;
             var requestDebugInfo = context != null ? DebugInfo(context.Request) : string.Empty;
             var logMessage = string.Format("{1}{0}{0}{2}{0}{0}{3}", Environment.NewLine, additionalMessage, sessionDebugInfo, requestDebugInfo);
             Logger.Error(logMessage);
@@ -88,7 +88,44 @@ namespace LtInfo.Common
         
         public void LogDetailedErrorMessage(SitkaRequestInfo requestInfo)
         {
-            Logger.Error(requestInfo.ToString(), requestInfo.OriginalException);
+            // Errors that aren't actionable (bad client input, bots, client disconnects, 4xx) go to WARN so they stay in the log file but don't generate an App Alerts email
+            if (NonActionableErrorClassifier.ShouldLogAsWarning(requestInfo))
+            {
+                Logger.Warn(requestInfo.ToString(), requestInfo.OriginalException);
+            }
+            else
+            {
+                Logger.Error(requestInfo.ToString(), requestInfo.OriginalException);
+            }
+            SitkaGlobalBase.CancelErrorLoggingFromApplicationEnd();
+        }
+
+        public void LogDetailedWarningMessage(Exception exception)
+        {
+            var context = HttpContext.Current;
+            LogDetailedWarningMessage("Handled Exception", exception, context);
+        }
+
+        public void LogDetailedWarningMessage(string additionalMessage, Exception exception, HttpContext context)
+        {
+            LogDetailedWarningMessage(string.Format("{0}:{1}{2}", additionalMessage, Environment.NewLine, exception), context);
+        }
+
+        public void LogDetailedWarningMessage(string additionalMessage)
+        {
+            var context = HttpContext.Current;
+            LogDetailedWarningMessage(additionalMessage, context);
+        }
+
+        /// <summary>
+        /// Same detail as <see cref="LogDetailedErrorMessage(string, HttpContext)"/> but at WARN, which is below the App Alerts email threshold
+        /// </summary>
+        public void LogDetailedWarningMessage(string additionalMessage, HttpContext context)
+        {
+            var sessionDebugInfo = context != null ? GetUserAndSessionInformationForErrorSafely(context) : string.Empty;
+            var requestDebugInfo = context != null ? DebugInfo(context.Request) : string.Empty;
+            var logMessage = string.Format("{1}{0}{0}{2}{0}{0}{3}", Environment.NewLine, additionalMessage, sessionDebugInfo, requestDebugInfo);
+            Logger.Warn(logMessage);
             SitkaGlobalBase.CancelErrorLoggingFromApplicationEnd();
         }
 
@@ -123,6 +160,21 @@ namespace LtInfo.Common
                 whoisInfo = CommonUtility.IndentLinesInStringByAmount(WhoisUtility.Lookup(userHostIpAddress), 12, " ");
             }
             return String.Format("IP Address: {1}{0}Hostname: {2}{0}Whois Info: {0}{3}{0}URL: {4}{0}{0}Begin Http Request:-->{0}{5}{6}{0}<--End Http Request", Environment.NewLine, request.UserHostAddress, rdns, whoisInfo, request.Url.AbsoluteUri, requestContent, truncationWarning);
+        }
+
+        /// <summary>
+        /// Logging an error must never fail because gathering the user details failed (e.g. database down, disabled tenant), otherwise the error and its App Alerts email are silently lost
+        /// </summary>
+        public string GetUserAndSessionInformationForErrorSafely(HttpContext context)
+        {
+            try
+            {
+                return GetUserAndSessionInformationForError(context);
+            }
+            catch (Exception ex)
+            {
+                return $"(Could not get user and session information: {ex.GetType().Name}: {ex.Message})";
+            }
         }
 
         /// <summary>
