@@ -49,15 +49,24 @@ namespace ProjectFirma.Web.Auth
                 {
                     AuthenticationFailed = (context) =>
                     {
-                        SitkaHttpApplication.Logger.Info(
-                            $"Owin Startup - Configuration - AuthenticationFailed AuthType:{FirmaWebConfiguration.AuthenticationType}");
                         if ((context.Exception.Message.StartsWith("OICE_20004") ||
                              context.Exception.Message.Contains("IDX10311")))
                         {
+                            SitkaHttpApplication.Logger.Info(
+                                $"Owin Startup - Configuration - AuthenticationFailed AuthType:{FirmaWebConfiguration.AuthenticationType}",
+                                context.Exception);
                             context.SkipToNextMiddleware();
                             return Task.FromResult(0);
                         }
 
+                        SitkaHttpApplication.Logger.Error(
+                            $"Owin Startup - Configuration - AuthenticationFailed AuthType:{FirmaWebConfiguration.AuthenticationType}",
+                            context.Exception);
+
+                        // Without HandleResponse the OIDC middleware rethrows and the user gets the raw
+                        // ASP.NET "Runtime Error" page instead of our standard error page.
+                        context.HandleResponse();
+                        context.Response.Redirect("/Home/Error");
                         return Task.FromResult(0);
                     },
                     SecurityTokenValidated = n =>
