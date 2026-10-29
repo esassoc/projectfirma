@@ -111,7 +111,7 @@ namespace ProjectFirma.Web.Views.Shared
                         ipAddress,
                         FirmaWebConfiguration.RecaptchaPrivateKey,
                         FirmaWebConfiguration.RecaptchaValidatorUrl,
-                        SitkaLogger.Instance.LogDetailedErrorMessage))
+                        SitkaLogger.Instance.LogDetailedWarningMessage))
                 {
                     errors.Add(new ValidationResult("Your Captcha response is incorrect."));
                 }

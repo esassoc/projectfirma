@@ -185,6 +185,18 @@
       <subject value="ProjectFirma Alert: ${environment} application error"/>
       <smtpHost value="${smtp-server}"/>
       <bufferSize value="1"/>
+      <!-- Repeats of the same error are emailed at most once per throttleMinutes; more than maxEmailsPerMinute is an alert storm that pauses error emails for throttleMinutes (15 if throttleMinutes is 0). FATAL is never held. 0 turns either setting off (see ErrorEmailThrottle) -->
+      <throttleMinutes value="15"/>
+      <maxEmailsPerMinute value="5"/>
+      <!-- Always email FATAL. Hangfire's own job failure logging duplicates ScheduledBackgroundJobBase's, so keep Hangfire out of email (it still goes to the log file) -->
+      <filter type="log4net.Filter.LevelMatchFilter">
+        <levelToMatch value="FATAL"/>
+        <acceptOnMatch value="true"/>
+      </filter>
+      <filter type="log4net.Filter.LoggerMatchFilter">
+        <loggerToMatch value="Hangfire"/>
+        <acceptOnMatch value="false"/>
+      </filter>
       <layout type="log4net.Layout.PatternLayout">
         <conversionPattern value="%date;%thread;%-5level;%logger;%newline%newline%message"/>
       </layout>

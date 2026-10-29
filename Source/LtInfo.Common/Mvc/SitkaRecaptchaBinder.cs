@@ -41,11 +41,11 @@ namespace LtInfo.Common.Mvc
             _privateKey = privateKey;
             _validationUrl = validatorUrl;
             _validateOnBind = validateOnBind;
-            _loggingFunction = SitkaLogger.Instance.LogDetailedErrorMessage;
+            _loggingFunction = loggingFunction;
         }
 
         public SitkaRecaptchaBinder(string privateKey, string validatorUrl, bool validatOnBind)
-            : this(privateKey, validatorUrl, validatOnBind, SitkaLogger.Instance.LogDetailedErrorMessage)
+            : this(privateKey, validatorUrl, validatOnBind, SitkaLogger.Instance.LogDetailedWarningMessage)
         {            
         }
 

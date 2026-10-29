@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Hangfire;
 using ProjectFirma.Web.Auth;
 using Microsoft.Owin.Security;
@@ -55,7 +56,15 @@ namespace ProjectFirma.Web
                     HttpRequestStorage.Tenant = tenant;
                     if (!tenant.TenantEnabled)
                     {
-                        throw new SitkaDisplayErrorException($"Tenant {tenant.TenantName} is disabled; cannot show site");
+                        // Requests to a disabled tenant are expected (old links, crawlers). Answer 410 Gone directly rather than throwing,
+                        // which got logged as an App Alerts error and then failed again rendering the error page for the same disabled tenant
+                        var httpContext = System.Web.HttpContext.Current;
+                        httpContext.Response.StatusCode = (int)HttpStatusCode.Gone;
+                        httpContext.Response.ContentType = "text/plain";
+                        httpContext.Response.Write("This site is no longer available.");
+                        SitkaGlobalBase.CancelErrorLoggingFromApplicationEnd();
+                        httpContext.ApplicationInstance.CompleteRequest();
+                        return Task.CompletedTask;
                     }
 
                     var canonicalHostNameForEnvironment = FirmaWebConfiguration.FirmaEnvironment.GetCanonicalHostNameForEnvironment(tenant);

@@ -308,8 +308,16 @@ namespace LtInfo.Common
             }
             catch (Exception ex)
             {
-                // Catch and log anything that goes wrong in this error handler, we don't let it escape so that it doesn't start the error handling over again
-                SitkaLogger.Instance.LogDetailedErrorMessage(ex);
+                // Catch and log anything that goes wrong in this error handler, we don't let it escape so that it doesn't start the error handling over again.
+                // If the original error was client-caused (WARN), failing to template its error page isn't email-worthy either
+                if (NonActionableErrorClassifier.IsNonActionableException(getLastError))
+                {
+                    SitkaLogger.Instance.LogDetailedWarningMessage(ex);
+                }
+                else
+                {
+                    SitkaLogger.Instance.LogDetailedErrorMessage(ex);
+                }
                 return WrapExceptionDetailsInHtml(String.Format("Secondary exception occurred while trying to display error message, original error message lost.\r\nSecondary Exception Details:\r\n{0}", ex));
             }
         }
@@ -397,10 +405,16 @@ namespace LtInfo.Common
                     {
                         lastError = SitkaHttpRequestStorage.WcfStoredError;
                     }
-                    SitkaLogger.Instance.LogDetailedErrorMessage(string.Format("Http Server is returning response status code \"{0}\" and error was not logged via the Application_Error method", Response.Status), lastError, Context);
-                    if (lastError != null && lastError.InnerException != null)
+                    // One log entry per request, lastError.ToString() already includes the inner exception chain.
+                    // Only 5xx responses are App Alerts email worthy (ERROR), 4xx are client problems and only go to the log file (WARN)
+                    var message = string.Format("Http Server is returning response status code \"{0}\" and error was not logged via the Application_Error method", Response.Status);
+                    if ((int)responseStatusCode < 500 || NonActionableErrorClassifier.ShouldLogAsWarning(requestInfo))
                     {
-                        SitkaLogger.Instance.LogDetailedErrorMessage(string.Format("Http Server is returning response status code \"{0}\" - Inner exception", Response.Status), lastError.InnerException, Context);
+                        SitkaLogger.Instance.LogDetailedWarningMessage(message, lastError, Context);
+                    }
+                    else
+                    {
+                        SitkaLogger.Instance.LogDetailedErrorMessage(message, lastError, Context);
                     }
                 }
             }
@@ -415,7 +429,18 @@ namespace LtInfo.Common
                     html += string.Format("<p>{0}</p>", SitkaHttpRequestStorage.NotFoundStoredError.Message);
                     SitkaHttpRequestStorage.NotFoundStoredError = null;
                 }
-                var errorHtml = GetMissingPageHtml(Request.Cookies.ToCookieCollection(Request.Url.Host), html);
+                string errorHtml;
+                try
+                {
+                    errorHtml = GetMissingPageHtml(Request.Cookies.ToCookieCollection(Request.Url.Host), html);
+                }
+                catch (Exception ex)
+                {
+                    // The templated Not Found page couldn't be fetched (e.g. a disabled tenant answers 410), send the plain one rather than a 500.
+                    // WARN not ERROR: the original request was only a 404
+                    SitkaLogger.Instance.LogDetailedWarningMessage("Could not fetch the templated Not Found page, sent the plain one instead", ex, Context);
+                    errorHtml = html;
+                }
                 SendErrorResponseToBrowser(errorHtml, (int)HttpStatusCode.NotFound);
             }
 
