@@ -12,12 +12,14 @@ namespace ProjectFirmaModels.UnitTestCommon
     [TestFixture]
     public class GeoserverConfigTest
     {
-        // Might need to vary, but I'm hoping it's consistent
-        public const string SvnSitkaGeoserverWorkspacesRootDir = "c:\\svn\\sitkatech\\trunk\\ProjectFirma\\Geoserver\\data_dir\\workspaces";
+        /// <summary>
+        /// GeoServer workspaces in the sitkatech-monorepo git clone, where the build scripts expect it.
+        /// </summary>
+        public const string GeoserverWorkspacesRootDir = "C:\\git\\esassoc\\sitkatech-monorepo\\ProjectFirma\\Geoserver\\data_dir\\workspaces";
 
         public static List<string> GetWorkspaceDirectories()
         {
-            var workspaceDirectories =  Directory.GetDirectories(SvnSitkaGeoserverWorkspacesRootDir).ToList();
+            var workspaceDirectories =  Directory.GetDirectories(GeoserverWorkspacesRootDir).ToList();
             return workspaceDirectories;
         }
 
@@ -34,7 +36,7 @@ namespace ProjectFirmaModels.UnitTestCommon
         ///
         /// from the datastore.xml file given.
         /// </summary>
-        /// <param name="datastoreXmlFilePath">C:\SVN\Sitkatech\Trunk\ProjectFirma\GeoServer\data_dir\workspaces\AshlandDemoProjectFirma\GeoServerSqlDataSource\datastore.xml for example</param>
+        /// <param name="datastoreXmlFilePath">C:\git\esassoc\sitkatech-monorepo\ProjectFirma\Geoserver\data_dir\workspaces\AshlandDemoProjectFirma\GeoServerSqlDataSource\datastore.xml for example</param>
         /// <param name="IdValueKey">"DataStoreInfoImpl" for example</param>
         /// <returns></returns>
         public static string GetIdValue(string datastoreXmlFilePath, string IdValueKey)
